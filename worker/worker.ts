@@ -15,9 +15,10 @@ const supabase = createClient(
 // Redis Connection
 // --------------------
 const connection = {
-  host: "localhost",
-  port: 6379,
-}
+  host: process.env.REDIS_HOST,
+  port: Number(process.env.REDIS_PORT),
+  password: process.env.REDIS_PASSWORD,
+};
 
 // --------------------
 // Helpers
@@ -43,7 +44,7 @@ const execPromise = (command: string): Promise<string> => {
 
 // 🔹 Extract transcript
 const getTranscript = async (url: string): Promise<string> => {
-  const command = `"./yt-dlp.exe" --write-auto-sub --sub-lang en --skip-download --sub-format vtt -o - "${url}"`
+  const command = `"yt-dlp" --write-auto-sub --sub-lang en --skip-download --sub-format vtt -o - "${url}"`
 
   const stdout = await execPromise(command)
 
@@ -62,7 +63,7 @@ const getTranscript = async (url: string): Promise<string> => {
 
 // 🔹 Get duration using JSON metadata
 const getVideoDuration = async (url: string): Promise<number> => {
-  const command = `"./yt-dlp.exe" -J "${url}"`
+  const command = `"yt-dlp" -J "${url}"`
   const stdout = await execPromise(command)
 
   const data = JSON.parse(stdout)
@@ -83,7 +84,7 @@ const downloadVideo = async (url: string, videoId: string): Promise<string> => {
     fs.mkdirSync(outputDir)
   }
 
-  const command = `"./yt-dlp.exe" -f mp4 -o "${outputPath}" "${url}"`
+  const command = `"yt-dlp" -f mp4 -o "${outputPath}" "${url}"`
 
   await execPromise(command)
 

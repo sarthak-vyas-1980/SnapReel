@@ -8,31 +8,30 @@ datasource db {
 }
 
 model User {
-  id            String   @id @default(cuid())
+  id            String    @id @default(cuid())
   name          String?
-  email         String   @unique
+  email         String?   @unique
   emailVerified DateTime?
   image         String?
-  createdAt     DateTime @default(now())
-
-  videos        Video[]
+  createdAt     DateTime  @default(now())
   accounts      Account[]
   sessions      Session[]
+  videos        Video[]
 }
 
 model Video {
-  id            String   @id @default(cuid())
-  userId        String
-  youtubeUrl    String
-  reelUrl       String?
-  thumbnailUrl  String?
-  timestamps    Json?
-  title         String   @default("Untitled Reel")
-  progress      Int      @default(0)
-  status        String   @default("processing")
-  errorMessage  String?
-  createdAt     DateTime @default(now())
-  user          User     @relation(fields: [userId], references: [id])
+  id           String   @id @default(cuid())
+  userId       String
+  youtubeUrl   String
+  reelUrl      String?
+  thumbnailUrl String?
+  timestamps   Json?
+  title        String   @default("Untitled Reel")
+  progress     Int      @default(0)
+  status       String   @default("processing")
+  errorMessage String?
+  createdAt    DateTime @default(now())
+  user         User     @relation(fields: [userId], references: [id])
 }
 
 model Account {
@@ -41,14 +40,13 @@ model Account {
   type              String
   provider          String
   providerAccountId String
-  refresh_token     String? @db.Text
-  access_token      String? @db.Text
+  refresh_token     String?
+  access_token      String?
   expires_at        Int?
   token_type        String?
   scope             String?
-  id_token          String? @db.Text
+  id_token          String?
   session_state     String?
-
   user              User    @relation(fields: [userId], references: [id])
 
   @@unique([provider, providerAccountId])
@@ -59,7 +57,6 @@ model Session {
   sessionToken String   @unique
   userId       String
   expires      DateTime
-
   user         User     @relation(fields: [userId], references: [id])
 }
 
