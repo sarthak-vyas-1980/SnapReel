@@ -8,7 +8,7 @@ export const getAITimestamps = async (transcript: string) => {
       "X-Title": "SnapReel"
     },
     body: JSON.stringify({
-      model: "openai/gpt-3.5-turbo", // free compatible model
+      model: "google/gemini-2.0-flash-lite-preview-02-05:free", // reliable free model
       messages: [
         {
           role: "system",
@@ -20,7 +20,7 @@ export const getAITimestamps = async (transcript: string) => {
               "start": "HH:MM:SS",
               "end": "HH:MM:SS"
             }
-            No explanation.
+            Do not include any explanation or markdown formatting.
           `
         },
         {
@@ -34,11 +34,20 @@ export const getAITimestamps = async (transcript: string) => {
 
   const data = await response.json()
 
+  if (data.error) {
+    throw new Error(`OpenRouter API Error: ${data.error.message}`)
+  }
+
   const content = data.choices?.[0]?.message?.content
 
+  if (!content) {
+    throw new Error("No content returned from AI")
+  }
+
   try {
-    return JSON.parse(content)
+    const jsonStr = content.replace(/```json/gi, "").replace(/```/g, "").trim()
+    return JSON.parse(jsonStr)
   } catch {
-    throw new Error("AI returned invalid JSON")
+    throw new Error(`AI returned invalid JSON: ${content}`)
   }
 }

@@ -18,12 +18,16 @@ export async function POST(req: Request) {
 
   const { videoId } = await req.json()
 
+  const user = await prisma.user.findUnique({
+    where: { email: session.user.email }
+  })
+
   const video = await prisma.video.findUnique({
     where: { id: videoId }
   })
 
-  if (!video) {
-    return NextResponse.json({ error: "Video not found" }, { status: 404 })
+  if (!video || !user || video.userId !== user.id) {
+    return NextResponse.json({ error: "Video not found or not authorized" }, { status: 404 })
   }
 
   // Delete from Supabase Storage

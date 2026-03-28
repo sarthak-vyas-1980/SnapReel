@@ -45,7 +45,7 @@ export default function DashboardClient({
     const interval = setInterval(async () => {
       const res = await fetch("/api/video/status")
       const data = await res.json()
-      setVideos(data)
+      setVideos(Array.isArray(data) ? data : [])
     }, 1000)
 
     return () => clearInterval(interval)
@@ -112,7 +112,7 @@ export default function DashboardClient({
 
         {/* Videos */}
         <div className="mt-12 space-y-8">
-          {videos
+          {(Array.isArray(videos) ? videos : [])
           .filter(v =>
             (v.title || "").toLowerCase().includes(search.toLowerCase())
           )
@@ -187,16 +187,16 @@ export default function DashboardClient({
               </div>
 
               {/* Progress */}
-              {video.status === "processing" && (
+              {(video.status === "processing" || video.status === "queued") && (
                 <div className="mb-6">
-                  <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+                  <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden text-center flex items-center">
                     <div
-                      className="bg-black h-3 transition-all duration-500 ease-in-out"
-                      style={{ width: `${video.progress || 0}%` }}
+                      className={`${video.status === "queued" ? "bg-gray-400 animate-pulse w-full" : "bg-black"} h-3 transition-all duration-500 ease-in-out`}
+                      style={{ width: video.status === "queued" ? "100%" : `${video.progress || 0}%` }}
                     />
                   </div>
                   <p className="text-sm text-gray-500 mt-2">
-                    Processing... {video.progress || 0}%
+                    {video.status === "queued" ? "Waiting in queue..." : `Processing... ${video.progress || 0}%`}
                   </p>
                 </div>
               )}
