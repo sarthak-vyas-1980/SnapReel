@@ -14,12 +14,13 @@ export const getAITimestamps = async (transcript: string) => {
           role: "system",
           content: `
             You are a video editor AI.
-            From the transcript provided, select the most engaging 30-60 second segment.
+            From the transcript provided, select exactly 3 most engaging segments (labeled Hook, Highlight, Outro) that are 30-60 seconds each.
             Return ONLY JSON in this format:
-            {
-              "start": "HH:MM:SS",
-              "end": "HH:MM:SS"
-            }
+            [
+              { "start": "HH:MM:SS", "end": "HH:MM:SS", "label": "Hook" },
+              { "start": "HH:MM:SS", "end": "HH:MM:SS", "label": "Highlight" },
+              { "start": "HH:MM:SS", "end": "HH:MM:SS", "label": "Outro" }
+            ]
             Do not include any explanation or markdown formatting.
           `
         },

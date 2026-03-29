@@ -15,7 +15,7 @@ export default async function DashboardPage() {
     where: { email: session.user.email },
     include: { videos: true }
   })
-
+  //@ts-ignore
   return <DashboardClient videos={user?.videos || []} />
 }
 

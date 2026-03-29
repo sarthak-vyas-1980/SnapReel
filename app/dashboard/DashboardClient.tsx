@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
+import ReelCard from "../../components/dashboard/ReelCard"
 
 type Video = {
   id: string
@@ -21,11 +21,10 @@ export default function DashboardClient({
 }: {
   videos: Video[]
 }) {
-  const router = useRouter()
   const [videos, setVideos] = useState<Video[]>(Array.isArray(initialVideos) ? initialVideos : [])
   const [search, setSearch] = useState("")
-  const [editingId, setEditingId] = useState<string | null>(null)
-  const [newTitle, setNewTitle] = useState("")
+
+  const [filter, setFilter] = useState("all")
 
   useEffect(() => {
     const interval = setInterval(async () => {
@@ -37,15 +36,7 @@ export default function DashboardClient({
     return () => clearInterval(interval)
   }, [])
 
-  const statusColor = (status: string) => {
-    if (status === "completed") return "bg-green-100 text-green-700 border-green-200"
-    if (status === "processing" || status === "queued") return "bg-yellow-100 text-yellow-700 border-yellow-200"
-    if (status === "failed") return "bg-red-100 text-red-700 border-red-200"
-    return "bg-gray-100 text-gray-700 border-gray-200"
-  }
-
-  const handleRename = async (videoId: string, e: React.MouseEvent) => {
-    e.stopPropagation()
+  const handleRename = async (videoId: string, newTitle: string) => {
     await fetch("/api/video/rename", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -58,13 +49,40 @@ export default function DashboardClient({
     setVideos((prev) =>
       prev.map((v) => (v.id === videoId ? { ...v, title: newTitle } : v))
     )
-    setEditingId(null)
+  }
+
+  const handleRetry = async (videoId: string) => {
+    try {
+      await fetch("/api/video/retry", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ videoId }),
+      })
+      
+      // Optimistic update
+      setVideos((prev) =>
+        prev.map((v) =>
+          v.id === videoId ? { ...v, status: "queued", progress: 0, errorMessage: null } : v
+        )
+      )
+    } catch (err) {
+      alert("Failed to retry reel.")
+    }
   }
 
   const safeVideos = Array.isArray(videos) ? videos : []
-  const filteredVideos = safeVideos.filter(v =>
-    (v.title || "").toLowerCase().includes(search.toLowerCase())
-  )
+  const filteredVideos = safeVideos.filter(v => {
+    const matchesSearch = (v.title || "").toLowerCase().includes(search.toLowerCase())
+    const matchesStatus = filter === "all" || v.status === filter
+    return matchesSearch && matchesStatus
+  })
+
+  const filterButtons = [
+    { label: "All", value: "all" },
+    { label: "Completed", value: "completed" },
+    { label: "Processing", value: "processing" },
+    { label: "Failed", value: "failed" },
+  ]
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -94,6 +112,23 @@ export default function DashboardClient({
               />
             </div>
 
+            {/* Filters */}
+            <div className="flex items-center bg-gray-100 p-1 rounded-2xl overflow-x-auto no-scrollbar">
+              {filterButtons.map((btn) => (
+                <button
+                  key={btn.value}
+                  onClick={() => setFilter(btn.value)}
+                  className={`px-4 py-3 rounded-xl text-sm font-bold transition-all whitespace-nowrap ${
+                    filter === btn.value
+                      ? "bg-white text-black shadow-sm"
+                      : "text-gray-500 hover:text-black"
+                  }`}
+                >
+                  {btn.label}
+                </button>
+              ))}
+            </div>
+
             {/* Divider */}
             <div className="hidden md:block w-px bg-gray-200 h-10 mx-4" />
 
@@ -117,14 +152,14 @@ export default function DashboardClient({
                 📭
               </div>
               <h3 className="text-2xl font-bold text-gray-900 mb-3">
-                {search ? "No matches found" : "No reels yet"}
+                {search || filter !== "all" ? "No matches found" : "No reels yet"}
               </h3>
               <p className="text-gray-500 max-w-md mx-auto mb-8 text-lg">
-                {search
-                  ? `We couldn't find any reels matching "${search}". Try a different term.`
+                {search || filter !== "all"
+                  ? `We couldn't find any reels matching your criteria. Try changing filters.`
                   : "Create your first reel to get started."}
               </p>
-              {!search && (
+              {!search && filter === "all" && (
                 <Link
                   href="/generate"
                   className="bg-black text-white px-8 py-4 rounded-2xl hover:opacity-90 transition font-semibold shadow-md flex items-center gap-2"
@@ -136,84 +171,12 @@ export default function DashboardClient({
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredVideos.map((video) => (
-                <div
-                  key={video.id}
-                  onClick={() => router.push(`/reel/${video.id}`)}
-                  className="bg-white rounded-3xl shadow-sm border p-6 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 cursor-pointer flex flex-col justify-between h-[250px] relative group overflow-hidden"
-                >
-                  <div className="absolute inset-x-0 top-0 h-1 bg-gray-100">
-                    {video.status === 'processing' && (
-                      <div className="h-full bg-blue-500 animate-pulse transition-all" style={{ width: `${video.progress}%` }} />
-                    )}
-                    {video.status === 'completed' && <div className="h-full bg-green-500 w-full" />}
-                    {video.status === 'failed' && <div className="h-full bg-red-500 w-full" />}
-                  </div>
-
-                  <div className="flex-1 mt-2">
-                    {/* Rename Section inside list view */}
-                    {editingId === video.id ? (
-                      <div className="flex flex-col gap-2 mb-4" onClick={(e) => e.stopPropagation()}>
-                        <input
-                          autoFocus
-                          value={newTitle}
-                          onChange={(e) => setNewTitle(e.target.value)}
-                          className="border border-gray-300 px-3 py-2 rounded-lg w-full font-semibold text-gray-900 focus:outline-none focus:ring-2 focus:ring-black shadow-sm text-sm"
-                          placeholder="Reel Title..."
-                        />
-                        <div className="flex gap-2">
-                          <button
-                            onClick={(e) => handleRename(video.id, e)}
-                            className="flex-1 bg-black text-white px-3 py-2 rounded-lg font-bold text-xs hover:opacity-90 transition-all shadow-sm"
-                          >
-                            Save Title
-                          </button>
-                          <button
-                            onClick={() => setEditingId(null)}
-                            className="flex-1 bg-white text-gray-700 px-3 py-2 rounded-lg font-bold text-xs border border-gray-200 hover:bg-gray-50 transition-all shadow-sm"
-                          >
-                            Cancel
-                          </button>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="flex justify-between items-start mb-4 gap-4">
-                        <h3 className="text-xl font-bold text-gray-900 line-clamp-2" title={video.title || "Untitled Reel"}>
-                          {video.title || "Untitled Reel"}
-                        </h3>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            setEditingId(video.id)
-                            setNewTitle(video.title || "")
-                          }}
-                          className="text-xs font-semibold px-2 py-1 bg-gray-100 text-gray-500 hover:bg-black hover:text-white rounded-md transition opacity-0 group-hover:opacity-100"
-                        >
-                          Rename
-                        </button>
-                      </div>
-                    )}
-
-                    <div className="flex flex-wrap items-center gap-2 mb-4">
-                      <span className={`px-3 py-1 text-xs font-bold rounded-full uppercase tracking-wider border ${statusColor(video.status)}`}>
-                        {video.status}
-                      </span>
-                      {video.createdAt && (
-                        <span suppressHydrationWarning className="text-xs font-medium text-gray-400 bg-gray-50 px-2 py-1 rounded-md border">
-                          {new Date(video.createdAt).toLocaleDateString()}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="mt-auto pt-4 border-t flex items-center justify-between">
-                    <span className="text-sm font-semibold text-blue-600 group-hover:underline">
-                      View Reel →
-                    </span>
-                    <div className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 group-hover:bg-blue-50 group-hover:text-blue-600 transition">
-                      ↗
-                    </div>
-                  </div>
-                </div>
+                <ReelCard 
+                  key={video.id} 
+                  video={video} 
+                  onRename={handleRename} 
+                  onRetry={handleRetry}
+                />
               ))}
             </div>
           )}

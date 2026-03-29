@@ -4,6 +4,21 @@ import { useEffect, useState } from "react"
 import Link from "next/link"
 import { useParams, useRouter } from "next/navigation"
 
+import Loader from "@/components/shared/Loader"
+import StatusBadge from "@/components/shared/StatusBadge"
+import ReelPlayer from "@/components/reel/ReelPlayer"
+import ReelInfoCard from "@/components/reel/ReelInfoCard"
+import AIInsightsCard from "@/components/reel/AIInsightsCard"
+import SourceVideoCard from "@/components/reel/SourceVideoCard"
+import ActionsCard from "@/components/reel/ActionsCard"
+
+type Clip = {
+  url: string
+  start: string
+  end: string
+  label: string
+}
+
 type Video = {
   id: string
   youtubeUrl: string
@@ -12,9 +27,10 @@ type Video = {
   progress: number
   thumbnailUrl?: string | null
   reelUrl?: string | null
+  clips?: Clip[] | null
   errorMessage?: string | null
   createdAt?: string
-  timestamps?: { start: number; end: number } | null
+  timestamps?: { start: string; end: string } | null
 }
 
 export default function ReelDetailPage() {
@@ -29,6 +45,9 @@ export default function ReelDetailPage() {
   
   const [isRenaming, setIsRenaming] = useState(false)
   const [newTitle, setNewTitle] = useState("")
+
+  const [isPolling, setIsPolling] = useState(true)
+  const [selectedClipIndex, setSelectedClipIndex] = useState(0)
 
   useEffect(() => {
     if (!id) return
@@ -62,8 +81,6 @@ export default function ReelDetailPage() {
     return () => clearInterval(interval)
   }, [id])
 
-  const [isPolling, setIsPolling] = useState(true)
-
   useEffect(() => {
     if (video && (video.status === 'completed' || video.status === 'failed')) {
       setIsPolling(false)
@@ -85,6 +102,20 @@ export default function ReelDetailPage() {
     } catch (err) {
       alert("Failed to delete reel.")
       setIsDeleting(false)
+    }
+  }
+
+  const handleRetry = async () => {
+    try {
+      await fetch("/api/video/retry", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ videoId: id }),
+      })
+      setVideo(prev => prev ? { ...prev, status: "queued", progress: 0, errorMessage: null } : null)
+      setIsPolling(true)
+    } catch (err) {
+      alert("Failed to retry reel.")
     }
   }
 
@@ -119,7 +150,7 @@ export default function ReelDetailPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin w-12 h-12 border-4 border-black border-t-transparent rounded-full" />
+        <Loader />
       </div>
     )
   }
@@ -136,21 +167,28 @@ export default function ReelDetailPage() {
     )
   }
 
-  const statusColor = (status: string) => {
-    if (status === "completed") return "bg-green-100 text-green-700 border-green-200"
-    if (status === "processing" || status === "queued") return "bg-yellow-100 text-yellow-700 border-yellow-200"
-    if (status === "failed") return "bg-red-100 text-red-700 border-red-200"
-    return "bg-gray-100 text-gray-700 border-gray-200"
+  const parseTime = (time: string | number | undefined) => {
+    if (typeof time === "number") return time
+    if (!time) return 0
+    const parts = time.split(":").map(Number)
+    if (parts.length === 3) return parts[0] * 3600 + parts[1] * 60 + parts[2]
+    return 0
   }
 
-  const startT = video.timestamps?.start || 0;
-  const endT = video.timestamps?.end || startT + 60;
-  const paddingT = 120;
-  const totalT = Math.max(endT + paddingT, 300);
-  const startPct = (startT / totalT) * 100;
-  const widthPct = ((endT - startT) / totalT) * 100;
+  const activeClip = video.clips?.[selectedClipIndex] || {
+    url: video.reelUrl,
+    start: video.timestamps?.start || "00:00:00",
+    end: video.timestamps?.end || "00:01:00",
+    label: "Main Reel"
+  }
 
-  const duration = video.timestamps ? Math.floor(video.timestamps.end - video.timestamps.start) : 35;
+  const startSec = parseTime(activeClip.start)
+  const endSec = parseTime(activeClip.end)
+  const duration = Math.floor(endSec - startSec)
+  
+  const totalT = Math.max(endSec + 120, 300)
+  const startPct = (startSec / totalT) * 100
+  const widthPct = ((endSec - startSec) / totalT) * 100
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center py-10 px-6 font-sans">
@@ -192,27 +230,22 @@ export default function ReelDetailPage() {
               </p>
             </div>
             
-            <div className="flex items-center gap-3 bg-gray-50 py-2 px-4 rounded-xl border border-gray-200 flex-shrink-0">
-              <span className={`px-3 py-1 text-xs font-bold rounded-full border ${statusColor(video.status)} uppercase tracking-wider`}>
-                {video.status}
-              </span>
-              {isPolling && (
-                <span className="flex h-3 w-3 relative ml-1">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-3 w-3 bg-blue-500"></span>
-                </span>
-              )}
-              <span className="text-sm font-bold text-gray-700 font-mono">
-                {video.progress}%
-              </span>
-            </div>
+            <StatusBadge status={video.status} progress={video.progress} />
           </div>
         </div>
 
         {video.status === "failed" && (
-          <div className="bg-red-50 border border-red-200 text-red-800 p-6 rounded-xl shadow-sm">
-            <h3 className="font-bold text-lg mb-2 flex items-center gap-2">⚠️ Processing Failed</h3>
-            <p>{video.errorMessage || "An unexpected error occurred during generation. Please try again or create a new reel."}</p>
+          <div className="bg-red-50 border border-red-200 text-red-800 p-6 rounded-2xl shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
+            <div>
+              <h3 className="font-bold text-lg mb-1 flex items-center gap-2">⚠️ Processing Failed</h3>
+              <p className="text-sm opacity-90">{video.errorMessage || "An unexpected error occurred during generation. Please try again or create a new reel."}</p>
+            </div>
+            <button 
+              onClick={handleRetry}
+              className="bg-red-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-red-700 transition shadow-md active:scale-95 whitespace-nowrap"
+            >
+              🔄 Retry Generation
+            </button>
           </div>
         )}
 
@@ -220,148 +253,50 @@ export default function ReelDetailPage() {
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all">
           <div className="flex flex-col lg:flex-row items-stretch gap-6">
             
-            {/* LEFT: Video Player */}
-            <div className="flex-1 flex items-center justify-center bg-black rounded-xl overflow-hidden min-h-[400px]">
-              {video.reelUrl ? (
-                <video
-                  src={video.reelUrl}
-                  controls
-                  className="w-full h-full max-h-[600px] object-contain rounded-xl"
-                />
-              ) : video.status === "processing" || video.status === "queued" ? (
-                <div className="text-center p-12 text-white flex flex-col items-center">
-                  <div className="w-16 h-16 border-4 border-gray-600 border-t-white rounded-full animate-spin mb-6" />
-                  <p className="text-xl font-bold mb-2">Analyzing & Editing...</p>
-                  <p className="text-gray-400 font-medium">Sit tight! We are capturing the best moment.</p>
-                </div>
-              ) : (
-                <div className="text-center p-12 text-gray-500 flex flex-col items-center">
-                  <span className="text-6xl block mb-6 opacity-30">🎬</span>
-                  <p className="text-xl font-bold">No media available.</p>
+            <div className="flex-1 flex flex-col gap-4">
+              <ReelPlayer reelUrl={activeClip.url} status={video.status} />
+              
+              {video.status === "completed" && video.clips && video.clips.length > 0 && (
+                <div className="flex bg-gray-50 p-1.5 rounded-2xl gap-2 overflow-x-auto no-scrollbar border">
+                  {video.clips.map((clip, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => setSelectedClipIndex(idx)}
+                      className={`flex-1 min-w-[120px] py-3 px-4 rounded-xl text-xs font-black transition-all ${
+                        selectedClipIndex === idx
+                          ? "bg-black text-white shadow-md scale-[1.02]"
+                          : "text-gray-500 hover:text-black hover:bg-white"
+                      }`}
+                    >
+                      {clip.label || `Clip ${idx + 1}`}
+                    </button>
+                  ))}
                 </div>
               )}
             </div>
 
             {/* RIGHT: Details Panel */}
-            <div className="flex-1 flex flex-col justify-between">
+            <div className="lg:w-[400px] flex flex-col justify-between">
               <div className="space-y-4">
                 
-                {/* Card 1: Reel & Clip Info */}
-                <div className="bg-gray-50 rounded-xl border border-gray-200 p-4">
-                  <div className="grid grid-cols-2 gap-4 mb-4">
-                    <div>
-                      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Status</p>
-                      <p className="text-sm font-bold text-gray-900 capitalize">{video.status}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Duration</p>
-                      <p className="text-sm font-bold text-gray-900">{duration} sec</p>
-                    </div>
-                  </div>
-                  
-                  <div className="mb-4">
-                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Created At</p>
-                    <p suppressHydrationWarning className="text-sm font-bold text-gray-900">{video.createdAt ? new Date(video.createdAt).toLocaleString() : 'N/A'}</p>
-                  </div>
+                <ReelInfoCard 
+                  status={video.status}
+                  duration={duration}
+                  createdAt={video.createdAt}
+                  timestamps={{ start: startSec, end: endSec }}
+                  startPct={startPct}
+                  widthPct={widthPct}
+                />
 
-                  <div className="border-t border-gray-200 pt-4">
-                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Clip Selection</p>
-                    {video.timestamps ? (
-                      <>
-                        <div className="flex justify-between items-center mb-4">
-                          <div className="text-center bg-white rounded-lg px-4 py-2 border border-gray-200 w-[45%] shadow-sm">
-                            <p className="font-mono text-sm font-bold text-gray-900">
-                              {Math.floor(video.timestamps.start / 60)}:{String(Math.floor(video.timestamps.start % 60)).padStart(2, '0')}
-                            </p>
-                          </div>
-                          <span className="text-gray-400 font-bold text-sm">→</span>
-                          <div className="text-center bg-white rounded-lg px-4 py-2 border border-gray-200 w-[45%] shadow-sm">
-                            <p className="font-mono text-sm font-bold text-gray-900">
-                              {Math.floor(video.timestamps.end / 60)}:{String(Math.floor(video.timestamps.end % 60)).padStart(2, '0')}
-                            </p>
-                          </div>
-                        </div>
+                <AIInsightsCard hookScore={selectedClipIndex === 0 ? 92 : selectedClipIndex === 1 ? 88 : 85} engagementLevel="High" />
 
-                        <div className="w-full">
-                          <div className="relative w-full h-3 bg-gray-200 rounded-full overflow-hidden border shadow-inner">
-                            <div 
-                              className="absolute h-full bg-black rounded-full shadow-sm"
-                              style={{ left: `${startPct}%`, width: `${widthPct}%` }}
-                            />
-                          </div>
-                        </div>
-                      </>
-                    ) : (
-                      <p className="text-gray-400 italic text-sm">Clip data unavailable</p>
-                    )}
-                  </div>
-                </div>
+                <SourceVideoCard youtubeUrl={video.youtubeUrl} />
 
-                {/* Card 2: AI Insights */}
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-gradient-to-br from-indigo-500 to-purple-600 p-4 rounded-xl flex flex-col justify-center items-center text-white shadow-sm overflow-hidden relative group">
-                    <div className="absolute -right-4 -top-4 opacity-10 text-6xl group-hover:scale-110 transition-transform">🎯</div>
-                    <p className="text-[10px] font-bold uppercase tracking-widest opacity-80 mb-1 z-10">Hook Score</p>
-                    <p className="text-4xl font-black z-10 tracking-tight">92<span className="text-sm opacity-60 font-medium ml-1">/100</span></p>
-                  </div>
-                  <div className="bg-gradient-to-br from-emerald-400 to-teal-500 p-4 rounded-xl flex flex-col justify-center items-center text-white shadow-sm overflow-hidden relative group">
-                    <div className="absolute -right-4 -bottom-4 opacity-10 text-6xl group-hover:scale-110 transition-transform">🔥</div>
-                    <p className="text-[10px] font-bold uppercase tracking-widest opacity-80 mb-1 z-10">Engagement Level</p>
-                    <p className="text-2xl font-black z-10 tracking-tight mt-1">High</p>
-                  </div>
-                </div>
-
-                {/* Card 3: Source Video */}
-                <div className="bg-gray-50 rounded-xl border border-gray-200 p-4">
-                  <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Source Video</h3>
-                  <div className="flex flex-col gap-3">
-                    <div className="flex items-center gap-3 p-3 bg-white rounded-xl border border-gray-200 shadow-sm">
-                      <div className="w-8 h-8 rounded-full bg-red-500 text-white flex items-center justify-center text-sm shrink-0 shadow-sm">
-                        ▶
-                      </div>
-                      <a href={video.youtubeUrl} target="_blank" rel="noreferrer" className="text-sm font-medium text-gray-700 truncate hover:text-red-600 hover:underline transition-all flex-1">
-                        {video.youtubeUrl}
-                      </a>
-                    </div>
-                    <a href={video.youtubeUrl} target="_blank" rel="noreferrer" className="w-full text-center py-2.5 bg-white text-gray-700 font-bold text-sm rounded-lg border border-gray-200 hover:bg-gray-50 shadow-sm transition-all flex items-center gap-2 justify-center">
-                      <span>↗️</span> Open Original
-                    </a>
-                  </div>
-                </div>
-
-                {/* Actions (Prominent) */}
-                <div className="pt-2">
-                  <div className="space-y-3">
-                    <a
-                      href={video.reelUrl || "#"}
-                      download
-                      className={`w-full flex items-center justify-center gap-2 py-3 bg-black text-white text-sm font-bold rounded-xl hover:opacity-90 shadow-md transition-all ${!video.reelUrl ? 'opacity-50 pointer-events-none' : ''}`}
-                    >
-                      ⬇️ Download Reel
-                    </a>
-                    <div className="flex gap-3">
-                      <button
-                        onClick={() => {
-                          if (video.reelUrl) {
-                            navigator.clipboard.writeText(video.reelUrl)
-                            alert("URL copied to clipboard!")
-                          }
-                        }}
-                        disabled={!video.reelUrl}
-                        className="flex-1 flex items-center justify-center gap-2 py-3 bg-white text-gray-900 border-2 border-gray-200 text-sm font-bold rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-all disabled:opacity-50"
-                      >
-                        🔗 Copy URL
-                      </button>
-                      <button
-                        onClick={handleDelete}
-                        disabled={isDeleting}
-                        className="flex-1 flex items-center justify-center gap-2 py-3 bg-red-50 text-red-600 text-sm font-bold rounded-xl hover:bg-red-100 border border-red-100 shadow-sm hover:shadow-md transition-all disabled:opacity-50"
-                      >
-                        🗑️ Delete
-                      </button>
-                    </div>
-                  </div>
-                </div>
+                <ActionsCard 
+                  reelUrl={activeClip.url} 
+                  onDelete={handleDelete} 
+                  isDeleting={isDeleting} 
+                />
 
               </div>
             </div>

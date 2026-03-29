@@ -1,0 +1,62 @@
+import { NextResponse } from "next/server"
+import { getServerSession } from "next-auth"
+import { authOptions } from "@/lib/auth"
+import { prisma } from "@/lib/prisma"
+import { reelQueue } from "@/lib/queue"
+
+export async function POST(req: Request) {
+  try {
+    const session = await getServerSession(authOptions)
+
+    if (!session?.user?.email) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      )
+    }
+
+    const { videoId } = await req.json()
+
+    if (!videoId) {
+      return NextResponse.json(
+        { error: "Missing Video ID" },
+        { status: 400 }
+      )
+    }
+
+    const video = await prisma.video.findUnique({
+      where: { id: videoId },
+      include: { user: true }
+    })
+
+    if (!video || video.user.email !== session.user.email) {
+      return NextResponse.json(
+        { error: "Video not found or unauthorized" },
+        { status: 404 }
+      )
+    }
+
+    // Reset video status and re-queue
+    await prisma.video.update({
+      where: { id: videoId },
+      data: {
+        status: "queued",
+        progress: 0,
+        errorMessage: null,
+      }
+    })
+
+    await reelQueue.add("process-video", {
+      videoId: video.id
+    })
+
+    return NextResponse.json({ success: true })
+
+  } catch (error) {
+    console.error(error)
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    )
+  }
+}
