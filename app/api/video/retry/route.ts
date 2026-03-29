@@ -1,19 +1,11 @@
 import { NextResponse } from "next/server"
-import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { reelQueue } from "@/lib/queue"
+import { requireUser } from "@/lib/session"
 
 export async function POST(req: Request) {
   try {
-    const session = await getServerSession(authOptions)
-
-    if (!session?.user?.email) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      )
-    }
+    const user = await requireUser()
 
     const { videoId } = await req.json()
 
@@ -24,12 +16,14 @@ export async function POST(req: Request) {
       )
     }
 
-    const video = await prisma.video.findUnique({
-      where: { id: videoId },
-      include: { user: true }
+    const video = await prisma.video.findFirst({
+      where: { 
+        id: videoId,
+        userId: user.id
+      }
     })
 
-    if (!video || video.user.email !== session.user.email) {
+    if (!video) {
       return NextResponse.json(
         { error: "Video not found or unauthorized" },
         { status: 404 }
@@ -52,8 +46,11 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ success: true })
 
-  } catch (error) {
-    console.error(error)
+  } catch (error: any) {
+    if (error.message === "Unauthorized") {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+    console.error("Retry Video API Error:", error)
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

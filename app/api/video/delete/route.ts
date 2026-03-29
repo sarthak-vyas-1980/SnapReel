@@ -1,8 +1,7 @@
 import { prisma } from "@/lib/prisma"
-import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth"
 import { NextResponse } from "next/server"
 import { createClient } from "@supabase/supabase-js"
+import { requireUser } from "@/lib/session"
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -10,36 +9,43 @@ const supabase = createClient(
 )
 
 export async function POST(req: Request) {
-  const session = await getServerSession(authOptions)
+  try {
+    const user = await requireUser()
 
-  if (!session?.user?.email) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    const { videoId } = await req.json()
+
+    if (!videoId) {
+      return NextResponse.json({ error: "Missing Video ID" }, { status: 400 })
+    }
+
+    const video = await prisma.video.findFirst({
+      where: { 
+        id: videoId,
+        userId: user.id
+      }
+    })
+
+    if (!video) {
+      return NextResponse.json({ error: "Video not found or not authorized" }, { status: 404 })
+    }
+
+    // Delete from Supabase Storage
+    await supabase.storage.from("reels").remove([
+      `${videoId}.mp4`,
+      `${videoId}.jpg`
+    ])
+
+    // Delete from DB
+    await prisma.video.delete({
+      where: { id: videoId }
+    })
+
+    return NextResponse.json({ success: true })
+  } catch (error: any) {
+    if (error.message === "Unauthorized") {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+    console.error("Delete Video API Error:", error)
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
-
-  const { videoId } = await req.json()
-
-  const user = await prisma.user.findUnique({
-    where: { email: session.user.email }
-  })
-
-  const video = await prisma.video.findUnique({
-    where: { id: videoId }
-  })
-
-  if (!video || !user || video.userId !== user.id) {
-    return NextResponse.json({ error: "Video not found or not authorized" }, { status: 404 })
-  }
-
-  // Delete from Supabase Storage
-  await supabase.storage.from("reels").remove([
-    `${videoId}.mp4`,
-    `${videoId}.jpg`
-  ])
-
-  // Delete from DB
-  await prisma.video.delete({
-    where: { id: videoId }
-  })
-
-  return NextResponse.json({ success: true })
 }

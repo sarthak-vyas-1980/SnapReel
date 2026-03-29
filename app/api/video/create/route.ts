@@ -1,19 +1,11 @@
 import { NextResponse } from "next/server"
-import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { reelQueue } from "@/lib/queue"
+import { requireUser } from "@/lib/session"
 
 export async function POST(req: Request) {
   try {
-    const session = await getServerSession(authOptions)
-
-    if (!session?.user?.email) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      )
-    }
+    const user = await requireUser()
 
     const { youtubeUrl } = await req.json()
 
@@ -21,17 +13,6 @@ export async function POST(req: Request) {
       return NextResponse.json(
         { error: "Missing YouTube URL" },
         { status: 400 }
-      )
-    }
-
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email }
-    })
-
-    if (!user) {
-      return NextResponse.json(
-        { error: "User not found" },
-        { status: 404 }
       )
     }
 
@@ -50,9 +31,11 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ success: true })
 
-  } catch (error) {
-    console.error(error)
-
+  } catch (error: any) {
+    if (error.message === "Unauthorized") {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+    console.error("Create Video API Error:", error)
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

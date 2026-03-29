@@ -1,20 +1,20 @@
-import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth"
-import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation"
 import GenerateClient from "./GenerateClient"
+import { getCurrentUser } from "@/lib/session"
 
 export default async function GeneratePage() {
-  const session = await getServerSession(authOptions)
+  const user = await getCurrentUser({ includeVideos: true })
 
-  if (!session?.user?.email) {
-    redirect("/")
+  if (!user) {
+    redirect("/Signin")
   }
 
-  const user = await prisma.user.findUnique({
-    where: { email: session.user.email },
-    include: { videos: true }
-  })
-
-  return <GenerateClient videos={user?.videos || []} />
+  return (
+    <GenerateClient 
+      videos={user.videos.map(v => ({
+        ...v,
+        createdAt: v.createdAt.toISOString()
+      }))} 
+    />
+  )
 }
