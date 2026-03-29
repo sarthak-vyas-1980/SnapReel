@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation"
 import GenerateClient from "./GenerateClient"
 import { getCurrentUser } from "@/lib/session"
+import AppLayout from "@/components/layout/AppLayout"
 
 export default async function GeneratePage() {
   const user = await getCurrentUser({ includeVideos: true })
@@ -10,11 +11,13 @@ export default async function GeneratePage() {
   }
 
   return (
-    <GenerateClient 
-      videos={user.videos.map(v => ({
-        ...v,
-        createdAt: v.createdAt.toISOString()
-      }))} 
-    />
+    <AppLayout>
+      <GenerateClient 
+        videos={user.videos.map(v => ({
+          ...v,
+          createdAt: v.createdAt.toISOString()
+        }))} 
+      />
+    </AppLayout>
   )
 }

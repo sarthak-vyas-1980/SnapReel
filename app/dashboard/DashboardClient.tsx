@@ -85,18 +85,8 @@ export default function DashboardClient({
   ]
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      <div className="max-w-6xl mx-auto px-6 py-12 w-full flex-1">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold tracking-tight text-gray-900">
-            🎬 SnapReel Dashboard
-          </h1>
-          <p className="text-gray-500 mt-2 text-lg">
-            Turn long YouTube videos into short engaging reels instantly.
-          </p>
-        </div>
-
+    <div className="flex flex-col">
+      <div className="max-w-7xl mx-auto w-full flex-1">
         {/* Control Bar */}
         <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 mb-10">
           <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
@@ -128,33 +118,20 @@ export default function DashboardClient({
                 </button>
               ))}
             </div>
-
-            {/* Divider */}
-            <div className="hidden md:block w-px bg-gray-200 h-10 mx-4" />
-
-            {/* Generate Action */}
-            <div className="flex shrink-0">
-              <Link
-                href="/generate"
-                className="bg-black text-white px-8 py-4 rounded-2xl hover:bg-gray-800 transition whitespace-nowrap font-semibold shadow-md inline-flex items-center gap-2"
-              >
-                <span className="text-xl leading-none">+</span> Create New Reel
-              </Link>
-            </div>
           </div>
         </div>
 
         {/* Videos Area */}
-        <div className="mt-12">
+        <div className="mt-8">
           {filteredVideos.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-32 px-6 text-center bg-white rounded-3xl border border-dashed border-gray-300 shadow-sm mt-8">
-              <div className="w-24 h-24 bg-gray-50 rounded-full flex items-center justify-center mb-6 shadow-inner text-5xl">
+            <div className="flex flex-col items-center justify-center py-16 px-6 text-center bg-white rounded-3xl border border-dashed border-gray-300 shadow-sm min-h-[55vh]">
+              <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4 shadow-inner text-3xl">
                 📭
               </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-3">
+              <h3 className="text-xl font-bold text-gray-900 mb-2">
                 {search || filter !== "all" ? "No matches found" : "No reels yet"}
               </h3>
-              <p className="text-gray-500 max-w-md mx-auto mb-8 text-lg">
+              <p className="text-gray-500 max-w-md mx-auto mb-6 text-base">
                 {search || filter !== "all"
                   ? `We couldn't find any reels matching your criteria. Try changing filters.`
                   : "Create your first reel to get started."}
@@ -162,14 +139,14 @@ export default function DashboardClient({
               {!search && filter === "all" && (
                 <Link
                   href="/generate"
-                  className="bg-black text-white px-8 py-4 rounded-2xl hover:opacity-90 transition font-semibold shadow-md flex items-center gap-2"
+                  className="bg-black text-white px-6 py-3 rounded-2xl hover:opacity-90 transition font-semibold shadow-md flex items-center gap-2"
                 >
-                  <span className="text-2xl leading-none">+</span> Create First Reel
+                  <span className="text-xl leading-none">+</span> Create First Reel
                 </Link>
               )}
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {filteredVideos.map((video) => (
                 <ReelCard 
                   key={video.id} 

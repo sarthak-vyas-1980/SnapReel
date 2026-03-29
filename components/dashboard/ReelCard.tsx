@@ -37,7 +37,7 @@ export default function ReelCard({ video, onRename, onRetry }: ReelCardProps) {
   return (
     <div
       onClick={() => router.push(`/reel/${video.id}`)}
-      className={`bg-white rounded-3xl shadow-sm border p-6 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 cursor-pointer flex flex-col justify-between h-[280px] relative group overflow-hidden ${
+      className={`bg-white rounded-2xl shadow-sm border p-5 transition-all duration-300 hover:shadow-md hover:-translate-y-1 cursor-pointer flex flex-col justify-between h-[224px] relative group overflow-hidden ${
         video.status === 'failed' ? 'border-red-100 hover:border-red-200' : ''
       }`}
     >
@@ -52,12 +52,12 @@ export default function ReelCard({ video, onRename, onRetry }: ReelCardProps) {
 
       <div className="flex-1 mt-2">
         {isEditing ? (
-          <div className="flex flex-col gap-2 mb-4" onClick={(e) => e.stopPropagation()}>
+          <div className="flex flex-col gap-2 mb-2" onClick={(e) => e.stopPropagation()}>
             <input
               autoFocus
               value={newTitle}
               onChange={(e) => setNewTitle(e.target.value)}
-              className="border border-gray-300 px-3 py-2 rounded-lg w-full font-semibold text-gray-900 focus:outline-none focus:ring-2 focus:ring-black shadow-sm text-sm"
+              className="border border-gray-300 px-2 py-1.5 rounded-lg w-full font-semibold text-gray-900 focus:outline-none focus:ring-2 focus:ring-black shadow-sm text-sm"
               placeholder="Reel Title..."
             />
             <div className="flex gap-2">
@@ -76,8 +76,8 @@ export default function ReelCard({ video, onRename, onRetry }: ReelCardProps) {
             </div>
           </div>
         ) : (
-          <div className="flex justify-between items-start mb-4 gap-4">
-            <h3 className="text-xl font-bold text-gray-900 line-clamp-2" title={video.title || "Untitled Reel"}>
+          <div className="flex justify-between items-start mb-2 gap-4">
+            <h3 className="text-lg font-bold text-gray-900 line-clamp-2" title={video.title || "Untitled Reel"}>
               {video.title || "Untitled Reel"}
             </h3>
             <button
@@ -93,10 +93,10 @@ export default function ReelCard({ video, onRename, onRetry }: ReelCardProps) {
           </div>
         )}
 
-        <div className="flex flex-wrap items-center gap-2 mb-4">
+        <div className="flex flex-wrap items-center gap-2 mb-2">
           <StatusBadge status={video.status} />
           {video.createdAt && (
-            <span suppressHydrationWarning className="text-xs font-medium text-gray-400 bg-gray-50 px-2 py-1 rounded-md border">
+            <span suppressHydrationWarning className="text-xs font-medium text-gray-400 bg-gray-50 px-1.5 py-0.5 rounded-md border">
               {new Date(video.createdAt).toLocaleDateString()}
             </span>
           )}
@@ -109,11 +109,11 @@ export default function ReelCard({ video, onRename, onRetry }: ReelCardProps) {
         )}
       </div>
 
-      <div className="mt-auto pt-4 border-t flex items-center justify-between gap-3">
+      <div className="mt-auto pt-3 border-t flex items-center justify-between gap-3">
         {video.status === "failed" ? (
           <button
             onClick={handleRetryClick}
-            className="flex-1 bg-black text-white py-2.5 rounded-xl text-xs font-bold hover:scale-[1.02] active:scale-[0.98] transition-all shadow-sm flex items-center justify-center gap-2"
+            className="flex-1 bg-black text-white py-1.5 rounded-xl text-xs font-bold hover:scale-[1.02] active:scale-[0.98] transition-all shadow-sm flex items-center justify-center gap-2"
           >
             🔄 Retry Generation
           </button>

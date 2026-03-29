@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation"
 import DashboardClient from "./DashboardClient"
 import { getCurrentUser } from "@/lib/session"
+import AppLayout from "@/components/layout/AppLayout"
 
 export default async function DashboardPage() {
   const user = await getCurrentUser({ includeVideos: true })
@@ -10,12 +11,14 @@ export default async function DashboardPage() {
   }
 
   return (
-    <DashboardClient
-      videos={user.videos.map((v) => ({
-        ...v,
-        createdAt: v.createdAt.toISOString(),
-      }))}
-    />
+    <AppLayout>
+      <DashboardClient
+        videos={user.videos.map((v) => ({
+          ...v,
+          createdAt: v.createdAt.toISOString(),
+        }))}
+      />
+    </AppLayout>
   )
 }
 

@@ -11,6 +11,7 @@ import ReelInfoCard from "@/components/reel/ReelInfoCard"
 import AIInsightsCard from "@/components/reel/AIInsightsCard"
 import SourceVideoCard from "@/components/reel/SourceVideoCard"
 import ActionsCard from "@/components/reel/ActionsCard"
+import AppLayout from "@/components/layout/AppLayout"
 
 type Clip = {
   url: string
@@ -191,15 +192,11 @@ export default function ReelDetailPage() {
   const widthPct = ((endSec - startSec) / totalT) * 100
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center py-10 px-6 font-sans">
-      <div className="w-full max-w-7xl flex flex-col gap-6">
+    <AppLayout>
+      <div className="w-full max-w-7xl mx-auto flex flex-col gap-6">
         
         {/* Header Navigation & Info */}
         <div>
-          <Link href="/dashboard" className="inline-flex items-center text-sm font-medium text-gray-500 hover:text-black hover:underline transition mb-6">
-            ← Back to Dashboard
-          </Link>
-
           <div className="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-all border border-gray-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div className="flex-1 w-full relative">
               <div className="flex items-center gap-3">
@@ -303,6 +300,6 @@ export default function ReelDetailPage() {
           </div>
         </div>
       </div>
-    </div>
+    </AppLayout>
   )
 }

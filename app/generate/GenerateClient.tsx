@@ -47,23 +47,8 @@ export default function GenerateClient({
   )
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      <div className="max-w-4xl mx-auto px-6 py-12 w-full flex-1 flex flex-col">
-        {/* Header */}
-        <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-4xl font-bold tracking-tight">
-              ✨ Generate Reel
-            </h1>
-            <p className="text-gray-500 mt-2">
-              Paste a YouTube link to start processing your next viral reel.
-            </p>
-          </div>
-          <Link href="/dashboard" className="text-sm font-medium text-gray-600 hover:text-black hover:underline transition whitespace-nowrap">
-            ← Back to Dashboard
-          </Link>
-        </div>
-
+    <div className="flex flex-col">
+      <div className="max-w-4xl mx-auto w-full flex-1 flex flex-col mt-4">
         <GenerateForm />
 
         <ProcessingQueue activeVideos={activeVideos} onDismissError={handleDismissError} />
