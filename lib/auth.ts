@@ -141,8 +141,15 @@ export const authOptions: NextAuthOptions = {
       return true;
     },
 
-    async jwt({ token, user, account }: any) {
+    async jwt({ token, user, account, trigger, session }: any) {
       console.log("DEBUG: jwt callback called", { tokenId: token.dbId, userId: user?.id, provider: account?.provider });
+      
+      // Handle frontend session update requests
+      if (trigger === "update" && session) {
+        if (session.name) token.name = session.name;
+        if (session.avatar) token.avatar = session.avatar;
+      }
+
       // On initial sign-in, resolve the DB user ID
       if (user && account) {
         if (account.provider === "credentials") {
@@ -177,6 +184,10 @@ export const authOptions: NextAuthOptions = {
       if (session.user && token.dbId) {
         session.user.id = token.dbId;
         session.user.avatar = token.avatar;
+        session.user.image = token.avatar;
+        if (token.name) {
+          session.user.name = token.name;
+        }
       }
       return session;
     },

@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { signOut, useSession } from "next-auth/react"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 
 export function Topbar() {
   const pathname = usePathname()
@@ -11,13 +11,25 @@ export function Topbar() {
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isProfileOpen, setIsProfileOpen] = useState(false)
+  const profileRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 10)
     }
+    
+    const handleClickOutside = (event: MouseEvent) => {
+      if (profileRef.current && !profileRef.current.contains(event.target as Node)) {
+        setIsProfileOpen(false)
+      }
+    }
+
     window.addEventListener("scroll", handleScroll)
-    return () => window.removeEventListener("scroll", handleScroll)
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => {
+      window.removeEventListener("scroll", handleScroll)
+      document.removeEventListener("mousedown", handleClickOutside)
+    }
   }, [])
 
   const navItems = [
@@ -75,7 +87,7 @@ export function Topbar() {
           </Link>
 
           {/* User Profile */}
-          <div className="relative">
+          <div className="relative" ref={profileRef}>
             <button
               onClick={() => setIsProfileOpen(!isProfileOpen)}
               className="w-10 h-10 rounded-full border-2 border-white shadow-sm overflow-hidden bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold hover:shadow-md transition-all active:scale-95"
@@ -94,15 +106,18 @@ export function Topbar() {
             {/* Profile Dropdown */}
             {isProfileOpen && (
               <>
-                <div 
-                  className="fixed inset-0 z-10" 
-                  onClick={() => setIsProfileOpen(false)}
-                />
                 <div className="absolute right-0 mt-3 w-48 bg-white rounded-2xl shadow-xl border border-gray-100 py-2 z-20 animate-in fade-in zoom-in-95 duration-200">
                   <div className="px-4 py-2 border-b border-gray-50 mb-1">
                     <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">Account</p>
                     <p className="text-sm font-bold text-gray-900 truncate">{session?.user?.name || "User"}</p>
                   </div>
+                  <Link
+                    href="/profile"
+                    onClick={() => setIsProfileOpen(false)}
+                    className="block w-full text-left px-4 py-2.5 text-sm text-gray-700 font-bold hover:bg-gray-50 hover:text-black transition-colors"
+                  >
+                    Profile Settings
+                  </Link>
                   <button
                     onClick={() => signOut()}
                     className="w-full text-left px-4 py-2 text-sm text-red-600 font-bold hover:bg-red-50 transition-colors"
