@@ -36,10 +36,10 @@ export default async function ProfilePage() {
     <AppLayout>
       <div className="max-w-4xl mx-auto w-full text-center">
         <div className="mb-2">
-          <h1 className="text-4xl font-extrabold tracking-tight text-gray-900">
+          <h1 className="text-4xl font-extrabold tracking-tight text-gray-900 dark:text-white">
             Profile Settings
           </h1>
-          <p className="text-gray-400 text-sm mt-1 mb-4">
+          <p className="text-gray-400 dark:text-gray-500 text-sm mt-1 mb-4">
             Manage your personal information and security.
           </p>
         </div>

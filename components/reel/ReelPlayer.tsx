@@ -22,7 +22,7 @@ export default function ReelPlayer({ reelUrl, status }: ReelPlayerProps) {
         />
       ) : isProcessing ? (
         <div className="text-center p-12 text-white flex flex-col items-center">
-          <div className="w-16 h-16 border-4 border-gray-600 border-t-white rounded-full animate-spin mb-6" />
+          <div className="w-16 h-16 border-4 border-gray-800 border-t-white rounded-full animate-spin mb-6" />
           <p className="text-xl font-bold mb-2">Analyzing & Editing...</p>
           <p className="text-gray-400 font-medium">Sit tight! We are capturing the best moment.</p>
         </div>

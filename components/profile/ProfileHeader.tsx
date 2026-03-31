@@ -44,7 +44,7 @@ export default function ProfileHeader({ name, email, avatar, onAvatarUpdate }: {
 
   return (
     <div className="flex flex-col sm:flex-row items-center justify-center text-center sm:text-left gap-4">
-      <div className="relative group w-16 h-16 rounded-full overflow-hidden border-2 border-white shadow-md flex-shrink-0 bg-gradient-to-br from-indigo-500 to-purple-500 flex justify-center items-center cursor-pointer">
+      <div className="relative group w-16 h-16 rounded-full overflow-hidden border-2 border-white dark:border-gray-800 shadow-md flex-shrink-0 bg-gradient-to-br from-indigo-500 to-purple-500 flex justify-center items-center cursor-pointer">
         {loading ? (
           <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center z-20">
              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mb-1"></div>
@@ -77,8 +77,8 @@ export default function ProfileHeader({ name, email, avatar, onAvatarUpdate }: {
         />
       </div>
       <div>
-        <h2 className="text-xl font-bold text-gray-900">{name || "SnapReel User"}</h2>
-        <p className="text-sm text-gray-500 font-medium">{email}</p>
+        <h2 className="text-xl font-bold text-gray-900 dark:text-white">{name || "SnapReel User"}</h2>
+        <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">{email}</p>
       </div>
     </div>
   )

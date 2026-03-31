@@ -150,7 +150,7 @@ export default function ReelDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-white dark:bg-[#0f172a] flex items-center justify-center transition-colors">
         <Loader />
       </div>
     )
@@ -158,10 +158,10 @@ export default function ReelDetailPage() {
 
   if (error || !video) {
     return (
-      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-6 text-center">
-        <h1 className="text-3xl font-bold mb-4">Error</h1>
-        <p className="text-gray-600 mb-8">{error || "Reel not found."}</p>
-        <Link href="/dashboard" className="px-6 py-2 bg-black text-white rounded-xl hover:opacity-90 transition shadow-md">
+      <div className="min-h-screen bg-white dark:bg-[#0f172a] flex flex-col items-center justify-center p-6 text-center transition-colors">
+        <h1 className="text-3xl font-bold mb-4 text-gray-900 dark:text-gray-100">Error</h1>
+        <p className="text-gray-600 dark:text-gray-400 mb-8">{error || "Reel not found."}</p>
+        <Link href="/dashboard" className="px-6 py-2 bg-black dark:bg-white text-white dark:text-black rounded-xl hover:opacity-90 dark:hover:bg-gray-100 transition shadow-md font-bold">
           Back to Dashboard
         </Link>
       </div>
@@ -197,7 +197,7 @@ export default function ReelDetailPage() {
         
         {/* Header Navigation & Info */}
         <div>
-          <div className="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-all border border-gray-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm hover:shadow-md transition-all border border-gray-200 dark:border-gray-700 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div className="flex-1 w-full relative">
               <div className="flex items-center gap-3">
                 {isRenaming ? (
@@ -207,22 +207,22 @@ export default function ReelDetailPage() {
                      onChange={(e) => setNewTitle(e.target.value)}
                      onBlur={handleRenameSave}
                      onKeyDown={handleKeyDown}
-                     className="text-3xl font-extrabold text-gray-900 border-b-2 border-black focus:outline-none bg-transparent w-full max-w-md py-1"
+                     className="text-3xl font-extrabold text-gray-900 dark:text-white border-b-2 border-black dark:border-white focus:outline-none bg-transparent w-full max-w-md py-1"
                    />
                 ) : (
                   <h1 
-                    className="text-3xl font-extrabold text-gray-900 flex items-center gap-3 cursor-text group"
+                    className="text-3xl font-extrabold text-gray-900 dark:text-white flex items-center gap-3 cursor-text group"
                     onClick={() => { setIsRenaming(true); setNewTitle(video.title || ""); }}
                     title="Click to rename"
                   >
                     {video.title || "Untitled Reel"}
-                    <button className="text-gray-300 opacity-0 group-hover:opacity-100 hover:text-black transition-all text-xl focus:opacity-100">
+                    <button className="text-gray-300 dark:text-gray-600 opacity-0 group-hover:opacity-100 hover:text-black dark:hover:text-white transition-all text-xl focus:opacity-100">
                       ✏️
                     </button>
                   </h1>
                 )}
               </div>
-              <p suppressHydrationWarning className="text-sm text-gray-500 mt-1">
+              <p suppressHydrationWarning className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                 Generated from YouTube Link
               </p>
             </div>
@@ -232,14 +232,14 @@ export default function ReelDetailPage() {
         </div>
 
         {video.status === "failed" && (
-          <div className="bg-red-50 border border-red-200 text-red-800 p-6 rounded-2xl shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-900/30 text-red-800 dark:text-red-300 p-6 rounded-2xl shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
             <div>
               <h3 className="font-bold text-lg mb-1 flex items-center gap-2">⚠️ Processing Failed</h3>
               <p className="text-sm opacity-90">{video.errorMessage || "An unexpected error occurred during generation. Please try again or create a new reel."}</p>
             </div>
             <button 
               onClick={handleRetry}
-              className="bg-red-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-red-700 transition shadow-md active:scale-95 whitespace-nowrap"
+              className="bg-red-600 dark:bg-red-700 text-white px-6 py-3 rounded-xl font-bold hover:bg-red-700 dark:hover:bg-red-800 transition shadow-md active:scale-95 whitespace-nowrap"
             >
               🔄 Retry Generation
             </button>
@@ -247,22 +247,22 @@ export default function ReelDetailPage() {
         )}
 
         {/* Unified Layout Card */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-all">
           <div className="flex flex-col lg:flex-row items-stretch gap-6">
             
             <div className="flex-1 flex flex-col gap-4">
               <ReelPlayer reelUrl={activeClip.url} status={video.status} />
               
               {video.status === "completed" && video.clips && video.clips.length > 0 && (
-                <div className="flex bg-gray-50 p-1.5 rounded-2xl gap-2 overflow-x-auto no-scrollbar border">
+                <div className="flex bg-gray-50 dark:bg-slate-900/50 p-1.5 rounded-2xl gap-2 overflow-x-auto no-scrollbar border dark:border-gray-700">
                   {video.clips.map((clip, idx) => (
                     <button
                       key={idx}
                       onClick={() => setSelectedClipIndex(idx)}
                       className={`flex-1 min-w-[120px] py-3 px-4 rounded-xl text-xs font-black transition-all ${
                         selectedClipIndex === idx
-                          ? "bg-black text-white shadow-md scale-[1.02]"
-                          : "text-gray-500 hover:text-black hover:bg-white"
+                          ? "bg-black dark:bg-white text-white dark:text-black shadow-md scale-[1.02]"
+                          : "text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white hover:bg-white dark:hover:bg-slate-800"
                       }`}
                     >
                       {clip.label || `Clip ${idx + 1}`}

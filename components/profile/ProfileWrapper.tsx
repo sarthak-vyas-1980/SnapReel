@@ -19,7 +19,6 @@ export default function ProfileWrapper({ user, hasPassword }: { user: UserData, 
 
   return (
     <div className="space-y-4 pb-2 w-full">
-      {/* Header Container */}
       <div className="py-2 flex justify-center text-center">
         <ProfileHeader 
           name={userData.name} 
@@ -29,12 +28,12 @@ export default function ProfileWrapper({ user, hasPassword }: { user: UserData, 
         />
       </div>
 
-      <div className="h-px bg-gradient-to-r from-transparent via-gray-400 to-transparent w-full my-4" />
+      <div className="h-px bg-gradient-to-r from-transparent via-gray-400 dark:via-gray-600 to-transparent w-full my-4" />
 
       <div className="flex flex-col md:flex-row w-full justify-between items-stretch text-center md:text-left gap-8 md:gap-0">
         {/* Personal Info Container */}
         <div className="py-2 flex flex-col items-center md:items-start w-full md:w-[45%]">
-          <h3 className="text-sm font-bold text-gray-500 uppercase tracking-widest mb-4 w-full text-center md:text-left">Personal Information</h3>
+          <h3 className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-4 w-full text-center md:text-left text-gray-400">Personal Information</h3>
           <div className="w-full">
             <ProfileForm 
               initialData={{ name: userData.name, number: userData.number }} 
@@ -44,14 +43,14 @@ export default function ProfileWrapper({ user, hasPassword }: { user: UserData, 
         </div>
 
         {/* Vertical Separator */}
-        <div className="hidden md:block w-px bg-gradient-to-b from-transparent via-gray-400 to-transparent mx-2 self-stretch" />
+        <div className="hidden md:block w-px bg-gradient-to-b from-transparent via-gray-400 dark:via-gray-600 to-transparent mx-2 self-stretch" />
 
         {/* Security Container */}
         <div className="py-2 flex flex-col items-center md:items-start w-full md:w-[45%]">
-          <h3 className="text-sm font-bold text-gray-500 uppercase tracking-widest mb-4 w-full text-center md:text-left">Security & Password</h3>
+          <h3 className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-4 w-full text-center md:text-left text-gray-400">Security & Password</h3>
           <div className="w-full text-center md:text-left">
             {!userHasPassword && (
-              <p className="text-xs text-gray-500 font-medium mb-4">
+              <p className="text-xs text-gray-500 dark:text-gray-400 font-medium mb-4">
                 You are signed in via Google OAuth. Set a password below to enable manual login functionality.
               </p>
             )}
@@ -62,7 +61,7 @@ export default function ProfileWrapper({ user, hasPassword }: { user: UserData, 
         </div>
       </div>
 
-      <div className="h-px bg-gradient-to-r from-transparent via-gray-400 to-transparent w-full my-4" />
+      <div className="h-px bg-gradient-to-r from-transparent via-gray-400 dark:via-gray-600 to-transparent w-full my-4" />
 
       {/* Danger Zone */}
       <div className="py-2 text-center flex flex-col items-center justify-center">

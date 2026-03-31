@@ -88,30 +88,30 @@ export default function DashboardClient({
     <div className="flex flex-col">
       <div className="max-w-7xl mx-auto w-full flex-1">
         {/* Control Bar */}
-        <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 mb-10">
+        <div className="bg-white dark:bg-slate-800 p-3 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 mb-10">
           <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
             {/* Search */}
-            <div className="flex-1 w-full bg-gray-50/50 rounded-2xl border flex items-center px-4 focus-within:ring-2 focus-within:ring-black focus-within:border-black transition">
+            <div className="flex-1 w-full bg-gray-50/50 dark:bg-slate-900/50 rounded-2xl border dark:border-gray-700 flex items-center px-4 focus-within:ring-2 focus-within:ring-black dark:focus-within:ring-white focus-within:border-black dark:focus-within:border-white transition">
               <span className="text-gray-400 text-lg mr-2">🔍</span>
               <input
                 type="text"
                 placeholder="Search reels..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="bg-transparent py-4 focus:outline-none w-full text-gray-800 placeholder-gray-400"
+                className="bg-transparent py-4 focus:outline-none w-full text-gray-800 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500"
               />
             </div>
 
             {/* Filters */}
-            <div className="flex items-center bg-gray-100 p-1 rounded-2xl overflow-x-auto no-scrollbar">
+            <div className="flex items-center bg-gray-100 dark:bg-slate-900 p-1 rounded-2xl overflow-x-auto no-scrollbar">
               {filterButtons.map((btn) => (
                 <button
                   key={btn.value}
                   onClick={() => setFilter(btn.value)}
                   className={`px-4 py-3 rounded-xl text-sm font-bold transition-all whitespace-nowrap ${
                     filter === btn.value
-                      ? "bg-white text-black shadow-sm"
-                      : "text-gray-500 hover:text-black"
+                      ? "bg-white dark:bg-slate-800 text-black dark:text-white shadow-sm"
+                      : "text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white"
                   }`}
                 >
                   {btn.label}
@@ -124,11 +124,11 @@ export default function DashboardClient({
         {/* Videos Area */}
         <div className="mt-8">
           {filteredVideos.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 px-6 text-center bg-white rounded-3xl border border-dashed border-gray-300 shadow-sm min-h-[55vh]">
-              <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4 shadow-inner text-3xl">
+            <div className="flex flex-col items-center justify-center py-16 px-6 text-center bg-white dark:bg-slate-800 rounded-3xl border border-dashed border-gray-300 dark:border-gray-700 shadow-sm min-h-[55vh]">
+              <div className="w-16 h-16 bg-gray-50 dark:bg-slate-900 rounded-full flex items-center justify-center mb-4 shadow-inner text-3xl">
                 📭
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
                 {search || filter !== "all" ? "No matches found" : "No reels yet"}
               </h3>
               <p className="text-gray-500 max-w-md mx-auto mb-6 text-base">
@@ -139,7 +139,7 @@ export default function DashboardClient({
               {!search && filter === "all" && (
                 <Link
                   href="/generate"
-                  className="bg-black text-white px-6 py-3 rounded-2xl hover:opacity-90 transition font-semibold shadow-md flex items-center gap-2"
+                  className="bg-black dark:bg-white text-white dark:text-black px-6 py-3 rounded-2xl hover:opacity-90 transition font-semibold shadow-md flex items-center gap-2"
                 >
                   <span className="text-xl leading-none">+</span> Create First Reel
                 </Link>

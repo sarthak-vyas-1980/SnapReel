@@ -52,42 +52,42 @@ export default function PasswordForm({ hasPassword, onSuccess }: { hasPassword: 
     <form onSubmit={handleSubmit} className="space-y-4">
       {hasPassword && (
         <div>
-          <label className="block text-xs font-bold text-gray-500 mb-1 uppercase tracking-wider">Current Password</label>
+          <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wider">Current Password</label>
           <input 
             type="password" 
             required 
             value={formData.oldPassword}
             onChange={(e) => setFormData({ ...formData, oldPassword: e.target.value })}
-            className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-black focus:border-black outline-none transition font-medium text-sm"
+            className="w-full px-4 py-2 bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-black dark:focus:ring-white focus:border-black dark:focus:border-white outline-none transition font-medium text-sm"
           />
         </div>
       )}
 
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="block text-xs font-bold text-gray-500 mb-1 uppercase tracking-wider">New Password</label>
+          <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wider">New Password</label>
           <input 
             type="password" 
             required 
             value={formData.newPassword}
             onChange={(e) => setFormData({ ...formData, newPassword: e.target.value })}
-            className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-black focus:border-black outline-none transition font-medium text-sm"
+            className="w-full px-4 py-2 bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-black dark:focus:ring-white focus:border-black dark:focus:border-white outline-none transition font-medium text-sm"
           />
         </div>
         <div>
-          <label className="block text-xs font-bold text-gray-500 mb-1 uppercase tracking-wider">Confirm New</label>
+          <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wider">Confirm New</label>
           <input 
             type="password" 
             required 
             value={formData.confirmPassword}
             onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-            className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-black focus:border-black outline-none transition font-medium text-sm"
+            className="w-full px-4 py-2 bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-black dark:focus:ring-white focus:border-black dark:focus:border-white outline-none transition font-medium text-sm"
           />
         </div>
       </div>
 
       {message.text && (
-        <div className={`p-3 rounded-xl text-sm font-bold ${message.type === 'success' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'} animate-in fade-in zoom-in-95`}>
+        <div className={`p-3 rounded-xl text-sm font-bold ${message.type === 'success' ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800' : 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800'} animate-in fade-in zoom-in-95`}>
           {message.text}
         </div>
       )}
@@ -96,7 +96,7 @@ export default function PasswordForm({ hasPassword, onSuccess }: { hasPassword: 
         <button 
           type="submit" 
           disabled={loading}
-          className="w-full sm:w-auto px-8 bg-gray-900 text-white py-2.5 rounded-xl text-sm font-bold hover:bg-black disabled:opacity-50 transition-all shadow-md active:scale-95 mt-1"
+          className="w-full sm:w-auto px-8 bg-gray-900 dark:bg-white text-white dark:text-black py-2.5 rounded-xl text-sm font-bold hover:bg-black dark:hover:bg-gray-100 disabled:opacity-50 transition-all shadow-md active:scale-95 mt-1"
         >
           {loading ? "Processing..." : hasPassword ? "Update Password" : "Set Password"}
         </button>

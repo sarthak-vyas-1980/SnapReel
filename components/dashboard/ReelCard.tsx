@@ -37,11 +37,11 @@ export default function ReelCard({ video, onRename, onRetry }: ReelCardProps) {
   return (
     <div
       onClick={() => router.push(`/reel/${video.id}`)}
-      className={`bg-white rounded-2xl shadow-sm border p-5 transition-all duration-300 hover:shadow-md hover:-translate-y-1 cursor-pointer flex flex-col justify-between h-[224px] relative group overflow-hidden ${
-        video.status === 'failed' ? 'border-red-100 hover:border-red-200' : ''
+      className={`bg-white dark:bg-slate-800 rounded-2xl shadow-sm border dark:border-gray-700 p-5 transition-all duration-300 hover:shadow-md hover:-translate-y-1 cursor-pointer flex flex-col justify-between h-[224px] relative group overflow-hidden ${
+        video.status === 'failed' ? 'border-red-100 dark:border-red-900/30 hover:border-red-200 dark:hover:border-red-900/50' : ''
       }`}
     >
-      <div className="absolute inset-x-0 top-0 h-1.5 bg-gray-100">
+      <div className="absolute inset-x-0 top-0 h-1.5 bg-gray-100 dark:bg-slate-900">
         {video.status === "processing" && (
           <div className="h-full bg-blue-500 animate-pulse transition-all" style={{ width: `${video.progress}%` }} />
         )}
@@ -57,19 +57,19 @@ export default function ReelCard({ video, onRename, onRetry }: ReelCardProps) {
               autoFocus
               value={newTitle}
               onChange={(e) => setNewTitle(e.target.value)}
-              className="border border-gray-300 px-2 py-1.5 rounded-lg w-full font-semibold text-gray-900 focus:outline-none focus:ring-2 focus:ring-black shadow-sm text-sm"
+              className="border border-gray-300 dark:border-gray-600 px-2 py-1.5 rounded-lg w-full font-semibold text-gray-900 dark:text-white bg-white dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white shadow-sm text-sm"
               placeholder="Reel Title..."
             />
             <div className="flex gap-2">
               <button
                 onClick={handleSave}
-                className="flex-1 bg-black text-white px-3 py-2 rounded-lg font-bold text-xs hover:opacity-90 transition-all shadow-sm"
+                className="flex-1 bg-black dark:bg-white text-white dark:text-black px-3 py-2 rounded-lg font-bold text-xs hover:opacity-90 transition-all shadow-sm"
               >
                 Save
               </button>
               <button
                 onClick={() => setIsEditing(false)}
-                className="flex-1 bg-white text-gray-700 px-3 py-2 rounded-lg font-bold text-xs border border-gray-200 hover:bg-gray-50 transition-all shadow-sm"
+                className="flex-1 bg-white dark:bg-slate-700 text-gray-700 dark:text-gray-300 px-3 py-2 rounded-lg font-bold text-xs border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-slate-600 transition-all shadow-sm"
               >
                 Cancel
               </button>
@@ -77,7 +77,7 @@ export default function ReelCard({ video, onRename, onRetry }: ReelCardProps) {
           </div>
         ) : (
           <div className="flex justify-between items-start mb-2 gap-4">
-            <h3 className="text-lg font-bold text-gray-900 line-clamp-2" title={video.title || "Untitled Reel"}>
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white line-clamp-2" title={video.title || "Untitled Reel"}>
               {video.title || "Untitled Reel"}
             </h3>
             <button
@@ -86,7 +86,7 @@ export default function ReelCard({ video, onRename, onRetry }: ReelCardProps) {
                 setIsEditing(true);
                 setNewTitle(video.title || "");
               }}
-              className="text-xs font-semibold px-2 py-1 bg-gray-100 text-gray-500 hover:bg-black hover:text-white rounded-md transition opacity-0 group-hover:opacity-100 shrink-0"
+              className="text-xs font-semibold px-2 py-1 bg-gray-100 dark:bg-slate-700 text-gray-500 dark:text-gray-400 hover:bg-black dark:hover:bg-white hover:text-white dark:hover:text-black rounded-md transition opacity-0 group-hover:opacity-100 shrink-0"
             >
               Rename
             </button>
@@ -96,7 +96,7 @@ export default function ReelCard({ video, onRename, onRetry }: ReelCardProps) {
         <div className="flex flex-wrap items-center gap-2 mb-2">
           <StatusBadge status={video.status} />
           {video.createdAt && (
-            <span suppressHydrationWarning className="text-xs font-medium text-gray-400 bg-gray-50 px-1.5 py-0.5 rounded-md border">
+            <span suppressHydrationWarning className="text-xs font-medium text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-slate-900 px-1.5 py-0.5 rounded-md border dark:border-gray-700">
               {new Date(video.createdAt).toLocaleDateString()}
             </span>
           )}
@@ -109,20 +109,20 @@ export default function ReelCard({ video, onRename, onRetry }: ReelCardProps) {
         )}
       </div>
 
-      <div className="mt-auto pt-3 border-t flex items-center justify-between gap-3">
+      <div className="mt-auto pt-3 border-t dark:border-gray-700 flex items-center justify-between gap-3">
         {video.status === "failed" ? (
           <button
             onClick={handleRetryClick}
-            className="flex-1 bg-black text-white py-1.5 rounded-xl text-xs font-bold hover:scale-[1.02] active:scale-[0.98] transition-all shadow-sm flex items-center justify-center gap-2"
+            className="flex-1 bg-black dark:bg-white text-white dark:text-black py-1.5 rounded-xl text-xs font-bold hover:scale-[1.02] active:scale-[0.98] transition-all shadow-sm flex items-center justify-center gap-2"
           >
             🔄 Retry Generation
           </button>
         ) : (
-          <span className="text-sm font-semibold text-blue-600 group-hover:underline">View Reel →</span>
+          <span className="text-sm font-semibold text-blue-600 dark:text-blue-400 group-hover:underline">View Reel →</span>
         )}
         
         {video.status !== "failed" && (
-          <div className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 group-hover:bg-blue-50 group-hover:text-blue-600 transition shrink-0">
+          <div className="w-8 h-8 rounded-full bg-gray-50 dark:bg-slate-900 flex items-center justify-center text-gray-400 dark:text-gray-500 group-hover:bg-blue-50 dark:group-hover:bg-blue-900/30 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition shrink-0">
             ↗
           </div>
         )}
