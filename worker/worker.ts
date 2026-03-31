@@ -188,6 +188,15 @@ const worker = new Worker(
         }
       });
 
+      await prisma.notification.create({
+        data: {
+          userId: video.userId,
+          title: "Reel Ready 🎉",
+          message: "Your reel has been generated successfully.",
+          type: "success",
+        },
+      });
+
       console.log("✅ Processing completed successfully for:", videoId);
     } catch (error: any) {
       console.error(`❌ Worker Error for video ${videoId}:`, error.message);
@@ -198,6 +207,15 @@ const worker = new Worker(
           status: "failed",
           errorMessage: error.message
         }
+      });
+
+      await prisma.notification.create({
+        data: {
+          userId: video.userId,
+          title: "Reel Failed ❌",
+          message: "Something went wrong. You can retry.",
+          type: "error",
+        },
       });
     }
   },

@@ -20,6 +20,7 @@ model User {
   accounts      Account[]
   sessions      Session[]
   videos        Video[]
+  notifications Notification[]
 }
 
 model Video {
@@ -70,4 +71,15 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String
+  message   String
+  type      String   // "success" | "error"
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
 }

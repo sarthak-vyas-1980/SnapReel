@@ -4,6 +4,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { signOut, useSession } from "next-auth/react"
 import { useState, useEffect, useRef } from "react"
+import { NotificationBell } from "./NotificationBell"
 
 export function Topbar() {
   const pathname = usePathname()
@@ -90,6 +91,8 @@ export function Topbar() {
           >
             <span className="mr-2 text-base">+</span> Create Reel
           </Link>
+
+          {session?.user && <NotificationBell />}
 
           {/* User Profile */}
           <div className="relative" ref={profileRef}>
