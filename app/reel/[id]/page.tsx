@@ -18,6 +18,8 @@ type Clip = {
   start: string
   end: string
   label: string
+  hookScore?: number
+  engagementLevel?: string
 }
 
 type Video = {
@@ -180,7 +182,9 @@ export default function ReelDetailPage() {
     url: video.reelUrl,
     start: video.timestamps?.start || "00:00:00",
     end: video.timestamps?.end || "00:01:00",
-    label: "Main Reel"
+    label: "Main Reel",
+    hookScore: 85,
+    engagementLevel: "Medium"
   }
 
   const startSec = parseTime(activeClip.start)
@@ -197,7 +201,7 @@ export default function ReelDetailPage() {
         
         {/* Header Navigation & Info */}
         <div>
-          <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm hover:shadow-md transition-all border border-gray-200 dark:border-gray-700 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div className="bg-white dark:bg-slate-800 p-5 rounded-3xl shadow-sm hover:shadow-md transition-all border border-gray-100 dark:border-gray-700 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div className="flex-1 w-full relative">
               <div className="flex items-center gap-3">
                 {isRenaming ? (
@@ -246,15 +250,14 @@ export default function ReelDetailPage() {
           </div>
         )}
 
-        {/* Unified Layout Card */}
-        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-all">
-          <div className="flex flex-col lg:flex-row items-stretch gap-6">
-            
-            <div className="flex-1 flex flex-col gap-4">
+        <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 hover:shadow-md transition-all">
+          <div className="flex flex-col lg:flex-row gap-6">
+            {/* LEFT: Video Player */}
+            <div className="flex-1">
               <ReelPlayer reelUrl={activeClip.url} status={video.status} />
               
               {video.status === "completed" && video.clips && video.clips.length > 0 && (
-                <div className="flex bg-gray-50 dark:bg-slate-900/50 p-1.5 rounded-2xl gap-2 overflow-x-auto no-scrollbar border dark:border-gray-700">
+                <div className="flex bg-gray-50 dark:bg-slate-900/50 p-1.5 rounded-2xl gap-2 mt-6 overflow-x-auto no-scrollbar border dark:border-gray-700">
                   {video.clips.map((clip, idx) => (
                     <button
                       key={idx}
@@ -272,30 +275,30 @@ export default function ReelDetailPage() {
               )}
             </div>
 
-            {/* RIGHT: Details Panel */}
-            <div className="lg:w-[400px] flex flex-col justify-between">
-              <div className="space-y-4">
-                
-                <ReelInfoCard 
-                  status={video.status}
-                  duration={duration}
-                  createdAt={video.createdAt}
-                  timestamps={{ start: startSec, end: endSec }}
-                  startPct={startPct}
-                  widthPct={widthPct}
-                />
+            {/* RIGHT: Sidebar */}
+            <div className="lg:w-[400px] shrink-0 flex flex-col gap-4 lg:border-l dark:border-gray-700 lg:pl-6">
+              <ReelInfoCard 
+                status={video.status}
+                duration={duration}
+                createdAt={video.createdAt}
+                timestamps={{ start: startSec, end: endSec }}
+                startPct={startPct}
+                widthPct={widthPct}
+              />
 
-                <AIInsightsCard hookScore={selectedClipIndex === 0 ? 92 : selectedClipIndex === 1 ? 88 : 85} engagementLevel="High" />
+              <AIInsightsCard 
+                hookScore={activeClip.hookScore || 85} 
+                engagementLevel={activeClip.engagementLevel || "Medium"} 
+              />
 
-                <SourceVideoCard youtubeUrl={video.youtubeUrl} />
+              <SourceVideoCard youtubeUrl={video.youtubeUrl} />
 
-                <ActionsCard 
-                  reelUrl={activeClip.url} 
-                  onDelete={handleDelete} 
-                  isDeleting={isDeleting} 
-                />
-
-              </div>
+              <ActionsCard 
+                reelUrl={activeClip.url} 
+                thumbnailUrl={video.thumbnailUrl}
+                onDelete={handleDelete} 
+                isDeleting={isDeleting} 
+              />
             </div>
           </div>
         </div>

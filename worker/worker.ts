@@ -82,13 +82,13 @@ const worker = new Worker(
         const durationVal = typeof duration === "number" ? duration : parseFloat(String(duration || "0"));
         if (durationVal > 0) {
           clipsToProcess = [
-            { start: formatSec(Math.floor(durationVal * 0.2)), end: formatSec(Math.min(Math.floor(durationVal * 0.2) + 35, durationVal)), label: "Clip 1" },
-            { start: formatSec(Math.floor(durationVal * 0.5)), end: formatSec(Math.min(Math.floor(durationVal * 0.5) + 35, durationVal)), label: "Clip 2" },
-            { start: formatSec(Math.floor(durationVal * 0.75)), end: formatSec(Math.min(Math.floor(durationVal * 0.75) + 35, durationVal)), label: "Clip 3" }
+            { start: formatSec(Math.floor(durationVal * 0.2)), end: formatSec(Math.min(Math.floor(durationVal * 0.2) + 35, durationVal)), label: "Clip 1", hook_score: 85, engagement: "Medium" },
+            { start: formatSec(Math.floor(durationVal * 0.5)), end: formatSec(Math.min(Math.floor(durationVal * 0.5) + 35, durationVal)), label: "Clip 2", hook_score: 80, engagement: "Medium" },
+            { start: formatSec(Math.floor(durationVal * 0.75)), end: formatSec(Math.min(Math.floor(durationVal * 0.75) + 35, durationVal)), label: "Clip 3", hook_score: 75, engagement: "Medium" }
           ];
         } else {
           clipsToProcess = [
-            { start: "00:00:10", end: "00:00:45", label: "Clip 1" }
+            { start: "00:00:10", end: "00:00:45", label: "Clip 1", hook_score: 85, engagement: "Medium" }
           ];
         }
       };
@@ -143,7 +143,9 @@ const worker = new Worker(
             url: uploadedUrl,
             start: clip.start,
             end: clip.end,
-            label: clip.label || `Clip ${i + 1}`
+            label: clip.label || `Clip ${i + 1}`,
+            hookScore: clip.hookScore || clip.hook_score || 85,
+            engagementLevel: clip.engagementLevel || clip.engagement || "Medium"
           });
           if (fs.existsSync(clipOutput)) fs.unlinkSync(clipOutput);
         } catch (err: any) {
