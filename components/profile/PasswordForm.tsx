@@ -92,13 +92,15 @@ export default function PasswordForm({ hasPassword, onSuccess }: { hasPassword: 
         </div>
       )}
 
-      <button 
-        type="submit" 
-        disabled={loading}
-        className="w-full bg-gray-900 text-white py-2.5 rounded-xl text-sm font-bold hover:bg-black disabled:opacity-50 transition-all shadow-md active:scale-95 mt-1"
-      >
-        {loading ? "Processing..." : hasPassword ? "Update Password" : "Set Password"}
-      </button>
+      <div className="flex justify-center md:justify-start w-full pt-1">
+        <button 
+          type="submit" 
+          disabled={loading}
+          className="w-full sm:w-auto px-8 bg-gray-900 text-white py-2.5 rounded-xl text-sm font-bold hover:bg-black disabled:opacity-50 transition-all shadow-md active:scale-95 mt-1"
+        >
+          {loading ? "Processing..." : hasPassword ? "Update Password" : "Set Password"}
+        </button>
+      </div>
     </form>
   )
 }

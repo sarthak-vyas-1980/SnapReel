@@ -14,21 +14,18 @@ export default function DangerZone() {
 
   return (
     <>
-      <div className="bg-white rounded-3xl p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-2 border-red-100">
-        <div>
-          <h3 className="text-lg font-bold text-red-700 flex items-center gap-2">
-            <span className="text-xl">⚠️</span> Danger Zone
-          </h3>
-          <p className="text-xs text-red-600/80 mt-1 font-medium max-w-md">
+      <div className="flex flex-col items-center justify-center py-2 w-full max-w-3xl mx-auto text-center">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full">
+          <p className="text-xs text-red-600/80 font-medium sm:whitespace-nowrap">
             Permanently delete your account and all associated reels. This action is irreversible.
           </p>
+          <button 
+            onClick={() => setIsOpen(true)}
+            className="bg-red-50 text-red-700 hover:bg-red-600 hover:text-white px-5 py-2.5 text-xs rounded-xl font-bold transition shadow-sm active:scale-95 shrink-0 border border-red-200"
+          >
+            Delete Account
+          </button>
         </div>
-        <button 
-          onClick={() => setIsOpen(true)}
-          className="bg-red-50 text-red-700 hover:bg-red-600 hover:text-white px-5 py-2.5 text-sm rounded-xl font-bold transition shadow-sm active:scale-95 shrink-0 border border-red-200"
-        >
-          Delete Account
-        </button>
       </div>
 
       {isOpen && (

@@ -11,7 +11,12 @@ export function Topbar() {
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isProfileOpen, setIsProfileOpen] = useState(false)
+  const [imgError, setImgError] = useState(false)
   const profileRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    setImgError(false)
+  }, [session?.user?.image])
 
   useEffect(() => {
     const handleScroll = () => {
@@ -45,10 +50,10 @@ export function Topbar() {
     <header
       className={`fixed top-0 left-0 right-0 h-16 z-50 transition-all duration-300 ${
         isReelPage
-          ? "bg-white shadow-sm border-b border-gray-200"
+          ? "bg-indigo-50 shadow-sm border-b border-indigo-100"
           : isScrolled
-          ? "bg-white/80 backdrop-blur-md shadow-sm border-b border-gray-100"
-          : "bg-white/50 backdrop-blur-sm border-b border-transparent"
+          ? "bg-indigo-50/95 backdrop-blur-md shadow-sm border-b border-indigo-100"
+          : "bg-indigo-50/80 backdrop-blur-sm border-b border-transparent"
       }`}
     >
       <div className="max-w-7xl mx-auto h-full px-4 sm:px-6 lg:px-8 flex items-center justify-between">
@@ -61,7 +66,7 @@ export function Topbar() {
         </Link>
 
         {/* Center: Navigation (Desktop) */}
-        <nav className="hidden md:flex items-center bg-gray-100/50 p-1 rounded-2xl border border-gray-100">
+        <nav className="hidden md:flex items-center bg-white/60 p-1 rounded-2xl border border-white/80 shadow-sm">
           {navItems.map((item) => (
             <Link
               key={item.name}
@@ -92,14 +97,15 @@ export function Topbar() {
               onClick={() => setIsProfileOpen(!isProfileOpen)}
               className="w-10 h-10 rounded-full border-2 border-white shadow-sm overflow-hidden bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold hover:shadow-md transition-all active:scale-95"
             >
-              {session?.user?.image ? (
+              {session?.user?.image && !imgError ? (
                 <img
                   src={session.user.image}
                   alt={session.user.name || "User"}
+                  onError={() => setImgError(true)}
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <span>{session?.user?.name?.[0]?.toUpperCase() || "U"}</span>
+                <span className="text-sm flex items-center justify-center pt-px break-all w-full leading-tight text-center px-0.5">{session?.user?.name ? session.user.name.split(' ')[0] : "U"}</span>
               )}
             </button>
 

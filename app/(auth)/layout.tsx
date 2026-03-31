@@ -5,7 +5,6 @@ export default function AuthLayout({
 }) {
   return (
     <div className="flex min-h-screen bg-gray-50 overflow-hidden">
-      {/* Left Sidebar - Desktop only */}
       <div className="hidden lg:flex lg:w-1/2 relative flex-col justify-center items-center bg-slate-950 p-16 overflow-hidden">
         {/* Animated background elements */}
         <div className="absolute top-0 left-0 w-full h-full opacity-30">
@@ -48,7 +47,6 @@ export default function AuthLayout({
           </div>
         </div>
         
-        {/* Footer info in sidebar */}
         <div className="absolute bottom-12 left-16 right-16 flex justify-between items-center text-slate-500 text-xs font-bold uppercase tracking-widest">
           <span>© 2026 SnapReel</span>
           <div className="flex gap-4">
@@ -58,15 +56,12 @@ export default function AuthLayout({
         </div>
       </div>
 
-      {/* Right Content - Form */}
       <div className="w-full lg:w-1/2 flex flex-col items-center justify-center p-6 sm:p-12 relative">
-        {/* Mobile-only background elements */}
         <div className="lg:hidden absolute inset-0 overflow-hidden -z-10">
           <div className="absolute -top-[10%] -left-[10%] w-[50%] h-[50%] bg-indigo-100 rounded-full blur-[80px]" />
           <div className="absolute -bottom-[10%] -right-[10%] w-[50%] h-[50%] bg-purple-100 rounded-full blur-[80px]" />
         </div>
 
-        {/* Logo for mobile */}
         <div className="lg:hidden mb-8">
           <h2 className="text-3xl font-black bg-gradient-to-r from-indigo-600 to-purple-600 text-transparent bg-clip-text">
             SnapReel

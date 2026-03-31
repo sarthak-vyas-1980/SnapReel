@@ -18,7 +18,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         return
       }
 
-      // Check for "G" key (case-insensitive)
       if (e.key.toLowerCase() === "g") {
         router.push("/generate")
       }

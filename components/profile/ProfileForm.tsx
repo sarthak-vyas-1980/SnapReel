@@ -52,21 +52,21 @@ export default function ProfileForm({ initialData, onUpdate }: ProfileFormProps)
 
   if (!isEditing) {
     return (
-      <div className="space-y-5">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="flex flex-col items-center justify-center bg-gray-50/50 p-3 rounded-xl border border-gray-100 shadow-sm text-center">
+      <div className="space-y-6 w-full">
+        <div className="flex flex-col gap-5 w-full">
+          <div className="flex flex-col items-center md:items-start text-center md:text-left">
             <p className="text-[10px] sm:text-xs font-bold text-gray-400 mb-0.5 uppercase tracking-wider">Full Name</p>
-            <p className="text-sm sm:text-base font-bold text-gray-900">{initialData.name}</p>
+            <p className="text-sm sm:text-base font-medium text-gray-900">{initialData.name}</p>
           </div>
-          <div className="flex flex-col items-center justify-center bg-gray-50/50 p-3 rounded-xl border border-gray-100 shadow-sm text-center">
+          <div className="flex flex-col items-center md:items-start text-center md:text-left">
             <p className="text-[10px] sm:text-xs font-bold text-gray-400 mb-0.5 uppercase tracking-wider">Phone Number</p>
-            <p className="text-sm sm:text-base font-bold text-gray-900">{initialData.number || "Not provided"}</p>
+            <p className="text-sm sm:text-base font-medium text-gray-900">{initialData.number || "Not provided"}</p>
           </div>
         </div>
-        <div className="flex justify-center mt-2">
+        <div className="flex justify-center md:justify-start w-full pt-1">
           <button 
             onClick={() => setIsEditing(true)}
-            className="w-full sm:w-auto bg-black text-white px-8 py-2.5 rounded-xl text-sm font-bold hover:bg-gray-800 transition-all shadow-md active:scale-95"
+            className="w-full sm:w-auto bg-gray-900 text-white px-8 py-2.5 rounded-xl text-sm font-bold hover:bg-black transition-all shadow-md active:scale-95 mt-1"
           >
             Edit Profile
           </button>

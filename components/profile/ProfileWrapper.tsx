@@ -18,9 +18,9 @@ export default function ProfileWrapper({ user, hasPassword }: { user: UserData, 
   const [userHasPassword, setUserHasPassword] = useState(hasPassword)
 
   return (
-    <div className="space-y-5 pb-8">
-      {/* Header Card */}
-      <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden p-4 sm:p-5">
+    <div className="space-y-4 pb-2 w-full">
+      {/* Header Container */}
+      <div className="py-2 flex justify-center text-center">
         <ProfileHeader 
           name={userData.name} 
           email={userData.email} 
@@ -29,31 +29,45 @@ export default function ProfileWrapper({ user, hasPassword }: { user: UserData, 
         />
       </div>
 
-      {/* Personal Info Card */}
-      <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden p-4 sm:p-5 text-center">
-        <h3 className="text-lg font-bold text-gray-900 mb-3">Personal Information</h3>
-        <ProfileForm 
-          initialData={{ name: userData.name, number: userData.number }} 
-          onUpdate={(newData: Partial<UserData>) => setUserData(prev => ({ ...prev, ...newData }))} 
-        />
-      </div>
+      <div className="h-px bg-gradient-to-r from-transparent via-gray-400 to-transparent w-full my-4" />
 
-      {/* Security Card */}
-      <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden p-4 sm:p-5 text-center">
-        <h3 className="text-lg font-bold text-gray-900 mb-3">Security & Password</h3>
-        {!userHasPassword && (
-          <p className="text-xs text-gray-500 font-medium mb-4 max-w-sm mx-auto">
-            You are signed in via Google OAuth. Set a password below to enable manual login functionality.
-          </p>
-        )}
-        <div className="max-w-md mx-auto text-left">
-           <PasswordForm hasPassword={userHasPassword} onSuccess={() => setUserHasPassword(true)} />
+      <div className="flex flex-col md:flex-row w-full justify-between items-stretch text-center md:text-left gap-8 md:gap-0">
+        {/* Personal Info Container */}
+        <div className="py-2 flex flex-col items-center md:items-start w-full md:w-[45%]">
+          <h3 className="text-sm font-bold text-gray-500 uppercase tracking-widest mb-4 w-full text-center md:text-left">Personal Information</h3>
+          <div className="w-full">
+            <ProfileForm 
+              initialData={{ name: userData.name, number: userData.number }} 
+              onUpdate={(newData: Partial<UserData>) => setUserData(prev => ({ ...prev, ...newData }))} 
+            />
+          </div>
+        </div>
+
+        {/* Vertical Separator */}
+        <div className="hidden md:block w-px bg-gradient-to-b from-transparent via-gray-400 to-transparent mx-2 self-stretch" />
+
+        {/* Security Container */}
+        <div className="py-2 flex flex-col items-center md:items-start w-full md:w-[45%]">
+          <h3 className="text-sm font-bold text-gray-500 uppercase tracking-widest mb-4 w-full text-center md:text-left">Security & Password</h3>
+          <div className="w-full text-center md:text-left">
+            {!userHasPassword && (
+              <p className="text-xs text-gray-500 font-medium mb-4">
+                You are signed in via Google OAuth. Set a password below to enable manual login functionality.
+              </p>
+            )}
+            <div className="max-w-md mx-auto md:mx-0 w-full">
+               <PasswordForm hasPassword={userHasPassword} onSuccess={() => setUserHasPassword(true)} />
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Danger Zone */}
-      <DangerZone />
+      <div className="h-px bg-gradient-to-r from-transparent via-gray-400 to-transparent w-full my-4" />
 
+      {/* Danger Zone */}
+      <div className="py-2 text-center flex flex-col items-center justify-center">
+        <DangerZone />
+      </div>
     </div>
   )
 }

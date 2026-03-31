@@ -1,12 +1,17 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import { useSession } from "next-auth/react"
 
 export default function ProfileHeader({ name, email, avatar, onAvatarUpdate }: { name: string, email: string, avatar: string, onAvatarUpdate: (url: string) => void }) {
   const { update } = useSession()
   const [loading, setLoading] = useState(false)
+  const [imgError, setImgError] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    setImgError(false)
+  }, [avatar])
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -38,8 +43,8 @@ export default function ProfileHeader({ name, email, avatar, onAvatarUpdate }: {
   }
 
   return (
-    <div className="flex flex-row items-center justify-center text-left gap-5">
-      <div className="relative group w-20 h-20 rounded-full overflow-hidden border-4 border-white shadow-md flex-shrink-0 bg-gradient-to-br from-indigo-500 to-purple-500 flex justify-center items-center cursor-pointer">
+    <div className="flex flex-col sm:flex-row items-center justify-center text-center sm:text-left gap-4">
+      <div className="relative group w-16 h-16 rounded-full overflow-hidden border-2 border-white shadow-md flex-shrink-0 bg-gradient-to-br from-indigo-500 to-purple-500 flex justify-center items-center cursor-pointer">
         {loading ? (
           <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center z-20">
              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mb-1"></div>
@@ -50,10 +55,15 @@ export default function ProfileHeader({ name, email, avatar, onAvatarUpdate }: {
           </div>
         )}
 
-        {avatar && !loading ? (
-          <img src={avatar} alt={name || "User Avatar"} className="w-full h-full object-cover relative z-10" />
+        {avatar && !loading && !imgError ? (
+          <img 
+            src={avatar} 
+            alt={name || "User Avatar"} 
+            onError={() => setImgError(true)}
+            className="w-full h-full object-cover relative z-10" 
+          />
         ) : !loading ? (
-          <span className="text-3xl text-white font-bold relative z-10">{name?.[0]?.toUpperCase() || "U"}</span>
+          <span className="text-xl text-white font-bold relative z-10 text-center px-1 break-all flex items-center justify-center w-full leading-tight">{name ? name.split(' ')[0] : "U"}</span>
         ) : null}
 
         <input 
