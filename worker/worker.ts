@@ -7,7 +7,8 @@ import fs from "fs";
 import { getAITimestamps } from "../lib/openrouter";
 import execPromise from "./utils/ffmpeg";
 import uploadFileToSupabase from "./utils/supabase";
-import getTranscript from "./utils/transcript";
+import getTranscript, { getTimedTranscript, TimedSegment } from "./utils/transcript";
+import { generateSRT, writeSRTFile } from "./utils/captions";
 import { 
   getYoutubeVideoId, 
   getRapidApiVideoInfo, 
@@ -93,6 +94,15 @@ const worker = new Worker(
         }
       };
 
+      // Fetch timed transcript for captions
+      let timedSegments: TimedSegment[] = [];
+      try {
+        timedSegments = await getTimedTranscript(ytVideoId);
+        console.log(`📝 Fetched ${timedSegments.length} timed transcript segments for captions`);
+      } catch (err: any) {
+        console.log(`⚠️ Timed transcript unavailable: ${err.message}. Clips will have no captions.`);
+      }
+
       try {
         const transcript = await getTranscript(ytVideoId);
         const aiResult = await getAITimestamps(transcript);
@@ -129,11 +139,32 @@ const worker = new Worker(
           data: { progress: 40 + Math.floor((i / clipsToProcess.length) * 40) }
         });
 
+        // Generate SRT captions for this clip
+        let srtPath: string | null = null;
+        if (timedSegments.length > 0) {
+          try {
+            const srtContent = generateSRT(timedSegments, clip.start, clip.end);
+            srtPath = writeSRTFile(srtContent, outputDir, clipId);
+            if (srtPath) console.log(`📝 Generated captions: ${srtPath}`);
+          } catch (err: any) {
+            console.log(`⚠️ Caption generation failed for clip ${i + 1}: ${err.message}`);
+          }
+        }
+
+        // Build FFmpeg command
+        const scaleFilter = "scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920";
+        // Escape backslashes and colons in srt path for FFmpeg on Windows
+        const escapedSrtPath = srtPath ? srtPath.replace(/\\/g, '/').replace(/:/g, '\\:') : null;
+        const subtitleFilter = escapedSrtPath
+          ? `,subtitles='${escapedSrtPath}':force_style='FontSize=14,Bold=1,PrimaryColour=&H00FFFFFF,OutlineColour=&H00000000,Outline=2,Shadow=1,Alignment=2,MarginV=70'`
+          : "";
+        const vf = `"${scaleFilter}${subtitleFilter}"`;
+
         let command = "";
         if (audioUrl) {
-          command = `ffmpeg -y -ss ${clip.start} -to ${clip.end} -i "${videoUrl}" -ss ${clip.start} -to ${clip.end} -i "${audioUrl}" -vf "scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920" -c:v libx264 -c:a aac "${clipOutput}"`;
+          command = `ffmpeg -y -ss ${clip.start} -to ${clip.end} -i "${videoUrl}" -ss ${clip.start} -to ${clip.end} -i "${audioUrl}" -vf ${vf} -c:v libx264 -c:a aac "${clipOutput}"`;
         } else {
-          command = `ffmpeg -y -ss ${clip.start} -to ${clip.end} -i "${videoUrl}" -vf "scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920" -c:v libx264 -c:a aac "${clipOutput}"`;
+          command = `ffmpeg -y -ss ${clip.start} -to ${clip.end} -i "${videoUrl}" -vf ${vf} -c:v libx264 -c:a aac "${clipOutput}"`;
         }
 
         try {
@@ -150,6 +181,11 @@ const worker = new Worker(
           if (fs.existsSync(clipOutput)) fs.unlinkSync(clipOutput);
         } catch (err: any) {
           console.error(`❌ Failed to process clip ${i + 1}:`, err.message);
+        }
+
+        // Clean up SRT file
+        if (srtPath && fs.existsSync(srtPath)) {
+          try { fs.unlinkSync(srtPath); } catch {}
         }
       }
 

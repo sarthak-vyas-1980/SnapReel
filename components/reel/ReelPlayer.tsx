@@ -11,7 +11,7 @@ export default function ReelPlayer({ reelUrl, status }: ReelPlayerProps) {
   const isProcessing = status === "processing" || status === "queued";
 
   return (
-    <div className="flex-1 flex items-center justify-center bg-black rounded-xl overflow-hidden min-h-[400px]">
+    <div className="flex-1 flex items-center justify-center bg-black rounded-xl overflow-hidden min-h-[600px]">
       {reelUrl ? (
         <video
           key={reelUrl}
