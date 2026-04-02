@@ -15,7 +15,7 @@ type ProcessingQueueProps = {
 
 export default function ProcessingQueue({ activeVideos, onDismissError }: ProcessingQueueProps) {
   return (
-    <div className={`flex flex-col bg-white dark:bg-slate-800 rounded-3xl shadow-sm border dark:border-gray-700 p-6 md:p-8 transition-colors duration-200 ${activeVideos.length > 0 ? "flex-1 mt-4" : "mt-0"}`}>
+    <div className={`flex flex-col bg-gray-50/50 dark:bg-slate-800 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 md:p-8 transition-colors duration-200 ${activeVideos.length > 0 ? "flex-1 mt-4" : "mt-0"}`}>
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <h2 className="text-xl font-bold flex items-center gap-3 text-gray-900 dark:text-white">
           <span className="w-8 h-8 rounded-full bg-black dark:bg-white text-white dark:text-black flex items-center justify-center text-sm font-bold shadow-sm">
@@ -33,7 +33,7 @@ export default function ProcessingQueue({ activeVideos, onDismissError }: Proces
 
       <div className="flex-1 flex flex-col">
         {activeVideos.length === 0 ? (
-          <div className="flex-1 flex flex-col items-center justify-center text-center py-10 lg:py-12 bg-gray-50/50 dark:bg-slate-900/50 rounded-2xl border border-dashed border-gray-200 dark:border-gray-700">
+          <div className="flex-1 flex flex-col items-center justify-center text-center py-10 lg:py-12 bg-white dark:bg-slate-900/50 rounded-2xl border border-dashed border-gray-300 dark:border-gray-700 shadow-sm">
             <div className="w-16 h-16 bg-white dark:bg-slate-800 rounded-full shadow-sm flex items-center justify-center mb-4 text-2xl">⌛</div>
             <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Queue is empty</h3>
             <p className="text-gray-500 dark:text-gray-400 max-w-sm mx-auto">Paste a YouTube link above to begin generating your next viral reel.</p>

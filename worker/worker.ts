@@ -54,13 +54,23 @@ const worker = new Worker(
       // 1. Fetch Video Info via RapidAPI
       const videoInfo = await getRapidApiVideoInfo(ytVideoId);
       
+      // Update video title from metadata
+      if (videoInfo.title) {
+        const newTitle = videoInfo.title.slice(0, 50);
+        await prisma.video.update({
+          where: { id: videoId },
+          data: { title: newTitle }
+        });
+        video.title = newTitle;
+      }
+      
       // 2. Extract best formatting
       const { videoUrl, audioUrl, duration } = extractDownloadUrls(videoInfo);
       
       console.log(`🔗 Extracted Video URL: ${videoUrl.slice(0, 100)}...`);
 
       if (duration && duration > 1200) {
-        throw new Error("Video exceeds 20 minute limit");
+        throw new Error("Video exceeds the 20 minute limit.");
       }
 
       await job.updateProgress(20);
@@ -230,7 +240,7 @@ const worker = new Worker(
         data: {
           userId: video.userId,
           title: "Reel Ready 🎉",
-          message: "Your reel has been generated successfully.",
+          message: `Your reel "${video.title}" has been generated successfully.`,
           type: "success",
         },
       });
@@ -251,7 +261,7 @@ const worker = new Worker(
         data: {
           userId: video.userId,
           title: "Reel Failed ❌",
-          message: "Something went wrong. You can retry.",
+          message: `Generation failed for "${video.title}": ${error.message}`,
           type: "error",
         },
       });

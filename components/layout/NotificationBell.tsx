@@ -32,7 +32,7 @@ export function NotificationBell() {
           )
           if (newNotifs.length > 0) {
             setToast(newNotifs[0])
-            setTimeout(() => setToast(null), 5000)
+            setTimeout(() => setToast(null), 7000)
           }
         }
         
@@ -164,7 +164,7 @@ export function NotificationBell() {
       {/* Simple Toast */}
       {toast && (
         <div 
-          className="fixed bottom-6 right-6 flex items-center gap-3 bg-white dark:bg-slate-800 border border-gray-100 dark:border-gray-700 shadow-2xl rounded-2xl p-4 pr-6 min-w-[300px] animate-in slide-in-from-right duration-500 z-[100]"
+          className="fixed top-20 right-6 flex items-center gap-4 bg-white dark:bg-slate-800 border border-gray-100 dark:border-gray-700 shadow-2xl rounded-2xl p-5 pr-8 min-w-[320px] animate-in fade-in slide-in-from-top-10 duration-500 z-[9999]"
           onClick={() => setToast(null)}
         >
           <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${

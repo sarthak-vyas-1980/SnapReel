@@ -88,7 +88,7 @@ export default function DashboardClient({
     <div className="flex flex-col">
       <div className="max-w-7xl mx-auto w-full flex-1">
         {/* Control Bar */}
-        <div className="bg-white dark:bg-slate-800 p-3 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 mb-10">
+        <div className="bg-white dark:bg-slate-800 p-3 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 mb-7">
           <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
             {/* Search */}
             <div className="flex-1 w-full bg-gray-50/50 dark:bg-slate-900/50 rounded-2xl border dark:border-gray-700 flex items-center px-4 focus-within:ring-2 focus-within:ring-black dark:focus-within:ring-white focus-within:border-black dark:focus-within:border-white transition">
@@ -122,7 +122,7 @@ export default function DashboardClient({
         </div>
 
         {/* Videos Area */}
-        <div className="mt-8">
+        <div>
           {filteredVideos.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 px-6 text-center bg-white dark:bg-slate-800 rounded-3xl border border-dashed border-gray-300 dark:border-gray-700 shadow-sm min-h-[55vh]">
               <div className="w-16 h-16 bg-gray-50 dark:bg-slate-900 rounded-full flex items-center justify-center mb-4 shadow-inner text-3xl">

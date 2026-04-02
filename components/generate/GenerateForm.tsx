@@ -8,16 +8,24 @@ export default function GenerateForm() {
     e.preventDefault();
     if (!url.trim()) return;
 
-    setLoading(true);
+    try {
+      const response = await fetch("/api/video/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ youtubeUrl: url }),
+      });
 
-    await fetch("/api/video/create", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ youtubeUrl: url }),
-    });
-
-    setUrl("");
-    setLoading(false);
+      if (!response.ok) {
+        const data = await response.json();
+        alert(data.error || "Failed to start generation");
+      } else {
+        setUrl("");
+      }
+    } catch (err) {
+      alert("An unexpected error occurred");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
