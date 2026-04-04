@@ -1,14 +1,57 @@
-FROM node:20-slim
-
-# Install ffmpeg
-RUN apt-get update && apt-get install -y \
-    ffmpeg \
-    && rm -rf /var/lib/apt/lists/*
+# ── Stage 1: Install dependencies ──────────────────────────────────
+FROM node:18-slim AS deps
 
 WORKDIR /app
-COPY package*.json ./
-RUN npm install
-COPY . .
 
+# Install build tooling needed by some npm packages (bcrypt, prisma engine, etc.)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    openssl \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy only package manifests first → layer is cached until deps change
+COPY package.json package-lock.json ./
+COPY prisma ./prisma/
+
+# Install ALL deps (tsx is in devDependencies, needed at runtime for the worker)
+RUN npm ci
+
+# Generate Prisma Client against the linux-debian openssl libraries
 RUN npx prisma generate
+
+
+# ── Stage 2: Production image ─────────────────────────────────────
+FROM node:18-slim AS runner
+
+WORKDIR /app
+
+# Install runtime-only system packages
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ffmpeg \
+    openssl \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy installed node_modules & generated Prisma Client from deps stage
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/package.json ./package.json
+
+# Copy only the source files the worker actually needs
+COPY prisma ./prisma/
+COPY worker ./worker/
+COPY lib ./lib/
+COPY tsconfig.json ./
+
+# Create temp dir for FFmpeg intermediate files
+RUN mkdir -p /app/temp
+
+# Non-root user for security
+RUN addgroup --system --gid 1001 worker && \
+    adduser  --system --uid 1001 --ingroup worker worker && \
+    chown -R worker:worker /app
+USER worker
+
+# Env vars are injected at runtime via `docker run --env-file` or orchestrator
+# No .env is baked in
+
 CMD ["npm", "run", "worker"]

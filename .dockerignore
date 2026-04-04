@@ -1,6 +1,56 @@
+# Dependencies (installed inside container)
 node_modules
+
+# Next.js build output (not needed for worker)
 .next
+out
+
+# Temp/working files
 temp
+*.mp4
+*.jpg
+*.srt
+
+# Git
 .git
+.gitignore
+
+# Environment files (injected at runtime)
 .env
-.env.production
+.env.*
+
+# IDE / OS
+.vscode
+.idea
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Docs / misc
+README.md
+LICENSE
+*.md
+!prisma/*.md
+
+# Test / debug scripts
+check_users.js
+test_api.ts
+proxy.ts
+yt_err.txt
+
+# Frontend-only config
+postcss.config.mjs
+tailwind.config.ts
+eslint.config.mjs
+next.config.ts
+next-env.d.ts
+
+# Frontend source (not needed for worker)
+app
+components
+public
+
+# Build artifacts
+tsconfig.tsbuildinfo
+nixpacks.toml
