@@ -45,38 +45,34 @@ export function generateSRT(
 
   if (clippedSegments.length === 0) return "";
 
-  // Group into ~3-second caption blocks for readability
+  // Group into very short caption blocks (max 4 words)
   const captionBlocks: { start: number; end: number; text: string }[] = [];
-  let currentBlock: { start: number; end: number; texts: string[] } | null = null;
 
   for (const seg of clippedSegments) {
     const segStart = Math.max(seg.offset - startSec, 0);
     const segEnd = Math.min(seg.offset + seg.duration - startSec, endSec - startSec);
+    const words = seg.text.trim().split(/\s+/).filter(Boolean);
 
-    if (!currentBlock) {
-      currentBlock = { start: segStart, end: segEnd, texts: [seg.text] };
-    } else if (segStart - currentBlock.start < 1.5 && currentBlock.texts.join(" ").split(/\s+/).length < 5) {
-      // Merge into current block if within 1.5 seconds AND current block has less than 5 words
-      currentBlock.end = segEnd;
-      currentBlock.texts.push(seg.text);
+    if (words.length === 0) continue;
+
+    // If segment has many words, split it into multiple tiny blocks
+    if (words.length > 4) {
+      const durationPerWord = (segEnd - segStart) / words.length;
+      for (let i = 0; i < words.length; i += 3) {
+        const chunk = words.slice(i, i + 3).join(" ");
+        captionBlocks.push({
+          start: segStart + (i * durationPerWord),
+          end: segStart + (Math.min(i + 3, words.length) * durationPerWord),
+          text: chunk
+        });
+      }
     } else {
-      // Finalize current block, start new one
       captionBlocks.push({
-        start: currentBlock.start,
-        end: currentBlock.end,
-        text: currentBlock.texts.join(" ").trim()
+        start: segStart,
+        end: segEnd,
+        text: words.join(" ")
       });
-      currentBlock = { start: segStart, end: segEnd, texts: [seg.text] };
     }
-  }
-
-  // Don't forget the last block
-  if (currentBlock) {
-    captionBlocks.push({
-      start: currentBlock.start,
-      end: currentBlock.end,
-      text: currentBlock.texts.join(" ").trim()
-    });
   }
 
   // Build SRT content
@@ -87,17 +83,10 @@ export function generateSRT(
       .replace(/&gt;/g, ">")
       .replace(/&#39;/g, "'")
       .replace(/&quot;/g, '"')
-      .toUpperCase();
+      .toUpperCase()
+      .trim();
 
-    // Wrap lines at ~4 words to keep captions compact (NEVER truncate words)
-    const words = cleanText.split(/\s+/);
-    const lines: string[] = [];
-    for (let w = 0; w < words.length; w += 4) {
-      lines.push(words.slice(w, w + 4).join(" "));
-    }
-    const wrappedText = lines.join("\n");
-
-    return `${i + 1}\n${toSRTTime(block.start)} --> ${toSRTTime(block.end)}\n${wrappedText}\n`;
+    return `${i + 1}\n${toSRTTime(block.start)} --> ${toSRTTime(block.end)}\n${cleanText}\n`;
   });
 
   return srtLines.join("\n");

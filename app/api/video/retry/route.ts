@@ -42,6 +42,9 @@ export async function POST(req: Request) {
 
     await reelQueue.add("process-video", {
       videoId: video.id
+    }, {
+      removeOnComplete: true,
+      removeOnFail: true,
     })
 
     return NextResponse.json({ success: true })

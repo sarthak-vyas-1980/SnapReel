@@ -23,15 +23,19 @@ export default function GenerateClient({
 }) {
   const [videos, setVideos] = useState<Video[]>(initialVideos)
 
+  const hasActiveJobs = videos.some(v => v.status === "processing" || v.status === "queued")
+
   useEffect(() => {
+    if (!hasActiveJobs) return
+
     const interval = setInterval(async () => {
       const res = await fetch("/api/video/status")
       const data = await res.json()
       setVideos(Array.isArray(data) ? data : [])
-    }, 1000)
+    }, 8000)
 
     return () => clearInterval(interval)
-  }, [])
+  }, [hasActiveJobs])
 
   const handleDismissError = async (id: string) => {
     await fetch("/api/video/delete", {

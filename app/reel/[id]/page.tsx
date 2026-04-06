@@ -79,7 +79,7 @@ export default function ReelDetailPage() {
          if(prev) fetchVideo();
          return prev;
       })
-    }, 2000)
+    }, 8000)
 
     return () => clearInterval(interval)
   }, [id])
