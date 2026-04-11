@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
-import { reelQueue } from "@/lib/queue"
 import { requireUser } from "@/lib/session"
 
 export async function POST(req: Request) {
@@ -23,13 +22,6 @@ export async function POST(req: Request) {
         userId: user.id,
         title: `Reel - ${youtubeUrl.slice(-6)}`
       }
-    })
-
-    await reelQueue.add("process-video", {
-      videoId: video.id
-    }, {
-      removeOnComplete: true,
-      removeOnFail: true,
     })
 
     return NextResponse.json({ success: true })

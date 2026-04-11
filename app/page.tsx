@@ -69,8 +69,8 @@ export default async function Home() {
             </h3>
           </div>
           <p className="text-gray-600 text-sm leading-relaxed">
-            Powered by Redis and BullMQ to process videos asynchronously
-            without blocking the user interface.
+            Powered by a dedicated background worker to process videos
+            asynchronously without blocking the user interface.
           </p>
         </div>
 

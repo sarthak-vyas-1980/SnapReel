@@ -1,40 +1,49 @@
 import "dotenv/config";
-import { Worker } from "bullmq";
+import { prisma } from "../lib/prisma";
 import { processJob } from "./processor";
 import { logger } from "./utils/logger";
 
-const connection = {
-  host: process.env.UPSTASH_REDIS_REST_URL ? new URL(process.env.UPSTASH_REDIS_REST_URL).hostname : process.env.REDIS_HOST,
-  port: process.env.UPSTASH_REDIS_REST_URL ? 6379 : Number(process.env.REDIS_PORT),
-  password: process.env.UPSTASH_REDIS_REST_TOKEN || process.env.REDIS_PASSWORD,
-  tls: process.env.UPSTASH_REDIS_REST_URL ? {} : undefined,
-  maxRetriesPerRequest: null,
-};
+const POLL_INTERVAL = 5000; // Check for new jobs every 5 seconds
 
-const worker = new Worker(
-  "reel-processing",
-  async (job) => {
-    logger.info(`🎯 Received job ${job.id} for Video ${job.data.videoId}`);
-    return processJob(job);
-  },
-  { 
-    connection,
-    concurrency: 1,
+async function pollForJobs() {
+  try {
+    // Find the oldest queued job
+    const job = await prisma.video.findFirst({
+      where: { status: "queued" },
+      orderBy: { createdAt: "asc" },
+    });
+
+    if (!job) return;
+
+    // Mark as processing immediately to prevent double-pickup
+    // The where clause acts as an optimistic lock — if another worker
+    // already claimed it, this update will match 0 rows silently.
+    const claimed = await prisma.video.updateMany({
+      where: { id: job.id, status: "queued" },
+      data: { status: "processing", progress: 0 },
+    });
+
+    if (claimed.count === 0) return; // Another worker claimed it
+
+    logger.info(`🎯 Picked up job for Video ${job.id}`);
+    await processJob(job.id);
+
+  } catch (err: any) {
+    logger.error(`💀 Poll cycle error: ${err.message}`);
   }
-);
+}
 
-worker.on("ready", () => {
+async function main() {
   logger.success("🚀 SnapReel Production Worker is ready for jobs!");
-});
 
-worker.on("completed", (job) => {
-  logger.success(`✅ Job ${job?.id} completed successfully.`);
-});
+  // Poll forever
+  while (true) {
+    await pollForJobs();
+    await new Promise(r => setTimeout(r, POLL_INTERVAL));
+  }
+}
 
-worker.on("failed", (job, err) => {
-  logger.error(`❌ Job ${job?.id} failed ultimately: ${err.message}`);
-});
-
-worker.on("error", (err) => {
-  logger.error(`💀 Worker connection error: ${err.message}`);
+main().catch(err => {
+  logger.error(`Fatal worker error: ${err.message}`);
+  process.exit(1);
 });

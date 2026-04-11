@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
-import { reelQueue } from "@/lib/queue"
 import { requireUser } from "@/lib/session"
 
 export async function POST(req: Request) {
@@ -30,7 +29,7 @@ export async function POST(req: Request) {
       )
     }
 
-    // Reset video status and re-queue
+    // Reset video status — worker will pick it up automatically
     await prisma.video.update({
       where: { id: videoId },
       data: {
@@ -38,13 +37,6 @@ export async function POST(req: Request) {
         progress: 0,
         errorMessage: null,
       }
-    })
-
-    await reelQueue.add("process-video", {
-      videoId: video.id
-    }, {
-      removeOnComplete: true,
-      removeOnFail: true,
     })
 
     return NextResponse.json({ success: true })

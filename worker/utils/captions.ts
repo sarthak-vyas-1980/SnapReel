@@ -75,7 +75,67 @@ export function generateSRT(
     }
   }
 
-  // Build SRT content
+  return buildSRTContent(captionBlocks);
+}
+
+/**
+ * Generate approximate SRT captions from plain transcript text when timed segments are unavailable.
+ * Evenly distributes the transcript text across the clip duration.
+ */
+export function generateApproximateSRT(
+  transcript: string,
+  clipStart: string,
+  clipEnd: string
+): string {
+  const startSec = parseTimestamp(clipStart);
+  const endSec = parseTimestamp(clipEnd);
+  const clipDuration = endSec - startSec;
+
+  if (clipDuration <= 0 || !transcript || transcript.trim().length === 0) return "";
+
+  const words = transcript.trim().split(/\s+/).filter(Boolean);
+  if (words.length === 0) return "";
+
+  // Take a proportional slice of the transcript based on clip position
+  // Assume ~2.5 words per second for average speech rate
+  const wordsPerSecond = 2.5;
+  const estimatedTotalDuration = words.length / wordsPerSecond;
+
+  // Calculate which portion of the transcript corresponds to this clip's time range
+  const wordStart = Math.floor((startSec / Math.max(estimatedTotalDuration, endSec)) * words.length);
+  const wordEnd = Math.min(
+    Math.ceil((endSec / Math.max(estimatedTotalDuration, endSec)) * words.length),
+    words.length
+  );
+
+  const clipWords = words.slice(wordStart, wordEnd);
+  if (clipWords.length === 0) return "";
+
+  // Build caption blocks: ~3 words each, evenly spaced across clip duration
+  const WORDS_PER_BLOCK = 3;
+  const captionBlocks: { start: number; end: number; text: string }[] = [];
+  const totalBlocks = Math.ceil(clipWords.length / WORDS_PER_BLOCK);
+  const blockDuration = clipDuration / totalBlocks;
+
+  for (let i = 0; i < clipWords.length; i += WORDS_PER_BLOCK) {
+    const chunk = clipWords.slice(i, i + WORDS_PER_BLOCK).join(" ");
+    const blockIndex = Math.floor(i / WORDS_PER_BLOCK);
+    captionBlocks.push({
+      start: blockIndex * blockDuration,
+      end: (blockIndex + 1) * blockDuration,
+      text: chunk,
+    });
+  }
+
+  return buildSRTContent(captionBlocks);
+}
+
+/**
+ * Shared: build SRT text from caption blocks.
+ */
+function buildSRTContent(captionBlocks: { start: number; end: number; text: string }[]): string {
+  if (captionBlocks.length === 0) return "";
+
   const srtLines = captionBlocks.map((block, i) => {
     const cleanText = block.text
       .replace(/&amp;/g, "&")

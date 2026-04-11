@@ -59,6 +59,8 @@ RUN addgroup --system --gid 1001 worker && \
 
 USER worker
 ENV HOME=/home/worker
+ENV FFMPEG_THREADS=2
+ENV FFMPEG_FILTER_THREADS=1
 
 # Env vars are injected at runtime via `docker run --env-file` or orchestrator
 # No .env is baked in

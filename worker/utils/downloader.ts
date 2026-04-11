@@ -3,63 +3,101 @@ import fs from "fs";
 import path from "path";
 import { logger } from "./logger";
 
-function execPromise(command: string): Promise<string> {
+/** Default timeout: 5 minutes. Prevents infinite hangs from bot-detection pages. */
+const DEFAULT_TIMEOUT_MS = 5 * 60 * 1000;
+
+function execPromise(command: string, timeoutMs = DEFAULT_TIMEOUT_MS): Promise<string> {
   return new Promise((resolve, reject) => {
-    exec(command, { maxBuffer: 1024 * 1024 * 100 }, (error, stdout, stderr) => {
-      if (error) return reject(new Error(stderr || error.message));
+    const child = exec(command, { maxBuffer: 1024 * 1024 * 100, timeout: timeoutMs }, (error, stdout, stderr) => {
+      if (error) {
+        if ((error as any).killed) {
+          return reject(new Error(`Command timed out after ${timeoutMs / 1000}s. YouTube may be blocking the request.`));
+        }
+        return reject(new Error(stderr || error.message));
+      }
       resolve(stdout);
     });
   });
 }
 
-/** Build cookie flags if YOUTUBE_COOKIES_BASE64 env var exists */
-function getCookieFlags(): { flags: string; cleanup: () => void } {
-  const cookieContent = process.env.YOUTUBE_COOKIES_BASE64
-    ? Buffer.from(process.env.YOUTUBE_COOKIES_BASE64, 'base64').toString('utf-8')
-    : null;
+/** Resolve the cookie file path if YOUTUBE_COOKIES_BASE64 is set. Returns null if unavailable. */
+function getCookiePath(): string | null {
+  const b64 = process.env.YOUTUBE_COOKIES_BASE64;
+  if (!b64) return null;
 
-  if (!cookieContent) return { flags: "", cleanup: () => {} };
-
+  const cookieContent = Buffer.from(b64, "base64").toString("utf-8");
   const cookiePath = path.join(process.cwd(), "temp", "yt-cookies.txt");
+  fs.mkdirSync(path.dirname(cookiePath), { recursive: true });
   fs.writeFileSync(cookiePath, cookieContent);
+  return cookiePath;
+}
 
-  return {
-    flags: `--cookies "${cookiePath}"`,
-    cleanup: () => { if (fs.existsSync(cookiePath)) fs.unlinkSync(cookiePath); }
-  };
+/** Clean up the temp cookie file */
+function cleanupCookies(cookiePath: string | null) {
+  if (cookiePath && fs.existsSync(cookiePath)) {
+    try { fs.unlinkSync(cookiePath); } catch {}
+  }
+}
+
+/** Build cookie flags string for yt-dlp */
+function getCookieFlags(): string {
+  const cookiePath = getCookiePath();
+  if (!cookiePath) return "";
+  return `--cookies "${cookiePath}"`;
 }
 
 export async function getMetadata(url: string) {
-  const cookie = getCookieFlags();
+  // Use -j (dump-json) NOT --print-json. --print-json triggers format selection and can fail.
+  const cookiePath = getCookiePath();
+  const cookieFlag = cookiePath ? `--cookies "${cookiePath}"` : "";
+
   try {
-    const flags = `--no-check-certificates --js-runtimes node --print-json --skip-download ${cookie.flags}`;
-    const command = `yt-dlp ${flags} "${url}"`;
-    const out = await execPromise(command);
+    // Try with cookies first if available (YouTube blocks most requests without auth now)
+    if (cookieFlag) {
+      try {
+        const out = await execPromise(`yt-dlp -j --no-warnings ${cookieFlag} "${url}"`, 60_000);
+        return JSON.parse(out);
+      } catch (err: any) {
+        logger.warn(`⚠️ Metadata with cookies failed: ${err.message}. Trying without...`);
+      }
+    }
+
+    // Fallback: without cookies
+    const out = await execPromise(`yt-dlp -j --no-warnings "${url}"`, 60_000);
     return JSON.parse(out);
   } finally {
-    cookie.cleanup();
+    cleanupCookies(cookiePath);
   }
 }
 
 export async function downloadVideo(url: string, outputPath: string) {
-  const baseFlags = `--js-runtimes node -f "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best" --merge-output-format mp4 --no-check-certificates`;
-  const baseCmd = `yt-dlp ${baseFlags} -o "${outputPath}" "${url}"`;
+  // Flexible format chain: try mp4 combos first, then any format with mp4 merge
+  const formatStr = `"bestvideo[ext=mp4]+bestaudio[ext=m4a]/bestvideo[ext=mp4]+bestaudio/bestvideo+bestaudio/best"`;
+  const baseFlags = `-f ${formatStr} --merge-output-format mp4 --no-warnings`;
+
+  const cookiePath = getCookiePath();
+  const cookieFlag = cookiePath ? `--cookies "${cookiePath}"` : "";
 
   try {
-    logger.info(`📥 Attempt 1: Regular Download...`);
-    await execPromise(baseCmd);
-  } catch (err: any) {
-    logger.warn(`⚠️ Attempt 1 failed: ${err.message.slice(0, 200)}`);
-    logger.warn(`⚠️ Trying with Cookies...`);
-    
-    const cookie = getCookieFlags();
-    if (!cookie.flags) throw new Error("Download failed and no cookies available for fallback.");
-
-    try {
-      await execPromise(`yt-dlp ${baseFlags} ${cookie.flags} -o "${outputPath}" "${url}"`);
-      logger.success(`✅ Fallback Download (Cookies) Successful.`);
-    } finally {
-      cookie.cleanup();
+    // Try with cookies first if available (YouTube blocks most IPs without auth now)
+    if (cookieFlag) {
+      try {
+        logger.info(`📥 Attempt 1: Download with Cookies...`);
+        await execPromise(`yt-dlp ${baseFlags} ${cookieFlag} -o "${outputPath}" "${url}"`);
+        logger.success(`✅ Download successful (with cookies).`);
+        return;
+      } catch (err: any) {
+        logger.warn(`⚠️ Cookie download failed: ${err.message}. Trying without cookies...`);
+        // Clean up partial download
+        if (fs.existsSync(outputPath)) fs.unlinkSync(outputPath);
+      }
     }
+
+    // Fallback: without cookies
+    logger.info(`📥 Attempt 2: Regular Download (no cookies)...`);
+    await execPromise(`yt-dlp ${baseFlags} -o "${outputPath}" "${url}"`);
+    logger.success(`✅ Download successful (without cookies).`);
+  } finally {
+    cleanupCookies(cookiePath);
   }
 }
