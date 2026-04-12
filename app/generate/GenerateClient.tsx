@@ -25,14 +25,16 @@ export default function GenerateClient({
 
   const hasActiveJobs = videos.some(v => v.status === "processing" || v.status === "queued")
 
+  const fetchVideos = async () => {
+    const res = await fetch("/api/video/status")
+    const data = await res.json()
+    setVideos(Array.isArray(data) ? data : [])
+  }
+
   useEffect(() => {
     if (!hasActiveJobs) return
 
-    const interval = setInterval(async () => {
-      const res = await fetch("/api/video/status")
-      const data = await res.json()
-      setVideos(Array.isArray(data) ? data : [])
-    }, 8000)
+    const interval = setInterval(fetchVideos, 8000)
 
     return () => clearInterval(interval)
   }, [hasActiveJobs])
@@ -53,7 +55,7 @@ export default function GenerateClient({
   return (
     <div className="flex flex-col">
       <div className="max-w-4xl mx-auto w-full flex-1 flex flex-col mt-4">
-        <GenerateForm />
+        <GenerateForm onNewJob={fetchVideos} />
 
         <ProcessingQueue activeVideos={activeVideos} onDismissError={handleDismissError} />
       </div>

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-export default function GenerateForm() {
+export default function GenerateForm({ onNewJob }: { onNewJob?: () => void }) {
   const [url, setUrl] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -20,6 +20,7 @@ export default function GenerateForm() {
         alert(data.error || "Failed to start generation");
       } else {
         setUrl("");
+        if (onNewJob) onNewJob();
       }
     } catch (err) {
       alert("An unexpected error occurred");
