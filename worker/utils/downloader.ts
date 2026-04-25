@@ -6,7 +6,7 @@ import { logger } from "./logger";
 /** Default timeout: 5 minutes. Prevents infinite hangs from bot-detection pages. */
 const DEFAULT_TIMEOUT_MS = 5 * 60 * 1000;
 const YT_COMMON_FLAGS = `--ignore-config --no-playlist --no-warnings`;
-const YT_NETWORK_FLAGS = `--retries 8 --fragment-retries 16 --extractor-retries 5 --retry-sleep 2 --force-ipv4 --extractor-args "youtube:player_client=mweb"`;
+const YT_NETWORK_FLAGS = `--retries 8 --fragment-retries 16 --extractor-retries 5 --retry-sleep 2 --force-ipv4 --extractor-args "youtube:player_client=web"`;
 
 function execPromise(
   command: string,
@@ -107,9 +107,9 @@ export async function getMetadata(url: string) {
 export async function downloadVideo(url: string, outputPath: string) {
   // Try progressively broader format selectors. Some videos block specific mux/container combos.
   const formatVariants = [
-    `-f "bv*[ext=mp4]+ba[ext=m4a]/bv*[ext=mp4]+ba/b[ext=mp4]/b" --merge-output-format mp4`,
     `-f "bv*+ba/b" --merge-output-format mp4`,
-    `-f "b" --merge-output-format mp4`,
+    `-f "bv*[ext=mp4]+ba[ext=m4a]/bv*[ext=mp4]+ba/b[ext=mp4]/b" --merge-output-format mp4`,
+    `-f "b" --recode-video mp4`,
   ];
   const baseFlags = `${YT_COMMON_FLAGS} ${YT_NETWORK_FLAGS} --file-access-retries 10`;
 

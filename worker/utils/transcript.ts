@@ -111,7 +111,7 @@ export async function getTranscriptData(
 ): Promise<{ text: string | null; segments: TimedSegment[] }> {
   const prefix = "transcript-";
   const outputTemplate = path.join(process.cwd(), "temp", `${prefix}%(id)s`);
-  const baseFlags = `--no-check-certificates --write-auto-sub --write-sub --sub-lang "en,hi" --sub-format vtt --skip-download --retries 5 --extractor-retries 3 --force-ipv4 --extractor-args "youtube:player_client=mweb" -o "${outputTemplate}"`;
+  const baseFlags = `--no-check-certificates --write-auto-sub --write-sub --sub-lang "en,hi" --sub-format vtt --skip-download --retries 5 --extractor-retries 3 --force-ipv4 --extractor-args "youtube:player_client=web" -o "${outputTemplate}"`;
 
   const cookiePath = getCookiePath();
   const cookieFlag = cookiePath ? `--cookies "${cookiePath}"` : "";
