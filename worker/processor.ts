@@ -31,9 +31,10 @@ export async function processJob(videoId: string) {
     await updateProgress(videoId, 5);
     logger.info(`📊 Fetching metadata for Video ${videoId}...`);
     const metadata = await getMetadata(video.youtubeUrl);
+    const videoTitle = metadata.title ? metadata.title.slice(0, 50) : video.title;
     
     if (metadata.title) {
-        await prisma.video.update({ where: { id: videoId }, data: { title: metadata.title.slice(0, 50) } });
+        await prisma.video.update({ where: { id: videoId }, data: { title: videoTitle } });
     }
 
     await updateProgress(videoId, 20);
@@ -123,7 +124,7 @@ export async function processJob(videoId: string) {
       data: {
         userId: video.userId,
         title: "Reel Ready 🎉",
-        message: `Your reel "${video.title}" is generated.`,
+        message: `Your reel "${videoTitle}" is generated.`,
         type: "success"
       }
     });
@@ -136,7 +137,6 @@ export async function processJob(videoId: string) {
       where: { id: videoId },
       data: { status: "failed", progress: 0, errorMessage: error.message }
     });
-    throw error;
   } finally {
     if (fs.existsSync(sourceFile)) fs.unlinkSync(sourceFile);
   }

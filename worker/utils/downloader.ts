@@ -5,7 +5,7 @@ import { logger } from "./logger";
 
 /** Default timeout: 5 minutes. Prevents infinite hangs from bot-detection pages. */
 const DEFAULT_TIMEOUT_MS = 5 * 60 * 1000;
-const YT_COMMON_FLAGS = `--ignore-config --no-playlist --no-warnings`;
+const YT_COMMON_FLAGS = `--ignore-config --no-playlist --no-warnings --js-runtimes node --remote-components ejs:github`;
 const YT_NETWORK_FLAGS = `--retries 8 --fragment-retries 16 --extractor-retries 5 --retry-sleep 2 --force-ipv4 --extractor-args "youtube:player_client=web"`;
 
 function execPromise(
