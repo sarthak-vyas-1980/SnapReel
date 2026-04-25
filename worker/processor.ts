@@ -9,7 +9,7 @@ import { getTranscriptData } from "./utils/transcript";
 import { getAITimestamps } from "../lib/openrouter";
 import { generateSRT, generateApproximateSRT, writeSRTFile } from "./utils/captions";
 
-/** Helper: update progress in the actual database so the frontend can see it */
+
 async function updateProgress(videoId: string, progress: number, status = "processing") {
   await prisma.video.update({
     where: { id: videoId },
