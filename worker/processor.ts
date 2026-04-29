@@ -53,7 +53,10 @@ export async function processJob(videoId: string) {
     }
 
     const aiClips = transcript
-      ? await getAITimestamps(transcript).catch(() => [])
+      ? await getAITimestamps(transcript).catch((err) => {
+          logger.warn(`⚠️ AI Timestamps failed for ${videoId}: ${err.message}`);
+          return [];
+        })
       : [];
 
     const clipsToProcess = aiClips.length > 0 ? aiClips : [
